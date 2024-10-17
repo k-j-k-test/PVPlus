@@ -41,7 +41,7 @@ namespace PVPlus
 
     public class VersionChecker
     {
-        private const string owner = "k-j-k";
+        private const string owner = "k-j-k-test";
         private const string repo = "PVPlus";
 
         public static async Task<(string LatestVersion, string DownloadUrl)> GetLatestVersionInfo()
