@@ -39,6 +39,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label5 = new System.Windows.Forms.Label();
+            this.checkBoxSample = new System.Windows.Forms.CheckBox();
             this.comboBoxCompany = new System.Windows.Forms.ComboBox();
             this.TextBoxDelimiter = new System.Windows.Forms.TextBox();
             this.checkBox구분자 = new System.Windows.Forms.CheckBox();
@@ -67,7 +68,6 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label6 = new System.Windows.Forms.Label();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
-            this.checkBoxSample = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -79,6 +79,7 @@
             this.textBoxPPath.Name = "textBoxPPath";
             this.textBoxPPath.Size = new System.Drawing.Size(481, 21);
             this.textBoxPPath.TabIndex = 0;
+            this.textBoxPPath.TextChanged += new System.EventHandler(this.textBoxPPath_TextChanged);
             // 
             // textBoxVPath
             // 
@@ -86,6 +87,7 @@
             this.textBoxVPath.Name = "textBoxVPath";
             this.textBoxVPath.Size = new System.Drawing.Size(481, 21);
             this.textBoxVPath.TabIndex = 1;
+            this.textBoxVPath.TextChanged += new System.EventHandler(this.textBoxVPath_TextChanged);
             // 
             // textBoxSPath
             // 
@@ -93,6 +95,7 @@
             this.textBoxSPath.Name = "textBoxSPath";
             this.textBoxSPath.Size = new System.Drawing.Size(481, 21);
             this.textBoxSPath.TabIndex = 2;
+            this.textBoxSPath.TextChanged += new System.EventHandler(this.textBoxSPath_TextChanged);
             // 
             // label1
             // 
@@ -127,6 +130,7 @@
             this.textBoxExcelPath.Name = "textBoxExcelPath";
             this.textBoxExcelPath.Size = new System.Drawing.Size(481, 21);
             this.textBoxExcelPath.TabIndex = 6;
+            this.textBoxExcelPath.TextChanged += new System.EventHandler(this.textBoxExcelPath_TextChanged);
             // 
             // label4
             // 
@@ -159,6 +163,16 @@
             this.label5.Size = new System.Drawing.Size(41, 12);
             this.label5.TabIndex = 10;
             this.label5.Text = "회사명";
+            // 
+            // checkBoxSample
+            // 
+            this.checkBoxSample.AutoSize = true;
+            this.checkBoxSample.Location = new System.Drawing.Point(11, 90);
+            this.checkBoxSample.Name = "checkBoxSample";
+            this.checkBoxSample.Size = new System.Drawing.Size(72, 16);
+            this.checkBoxSample.TabIndex = 12;
+            this.checkBoxSample.Text = "간이검증";
+            this.checkBoxSample.UseVisualStyleBackColor = true;
             // 
             // comboBoxCompany
             // 
@@ -446,16 +460,6 @@
             this.linkLabel1.Size = new System.Drawing.Size(0, 12);
             this.linkLabel1.TabIndex = 28;
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
-            // 
-            // checkBoxSample
-            // 
-            this.checkBoxSample.AutoSize = true;
-            this.checkBoxSample.Location = new System.Drawing.Point(11, 90);
-            this.checkBoxSample.Name = "checkBoxSample";
-            this.checkBoxSample.Size = new System.Drawing.Size(72, 16);
-            this.checkBoxSample.TabIndex = 12;
-            this.checkBoxSample.Text = "간이검증";
-            this.checkBoxSample.UseVisualStyleBackColor = true;
             // 
             // MainPVForm
             // 

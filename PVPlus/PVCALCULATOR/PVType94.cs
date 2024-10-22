@@ -54,5 +54,4 @@ namespace PVPlus.PVCALCULATOR
             return V1 - V2 + V3;
         }
     }
-
 }

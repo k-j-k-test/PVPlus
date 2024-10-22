@@ -33,6 +33,9 @@ namespace PVPlus.UI
         public MainForm()
         {
             InitializeComponent();
+
+            // 폼의 최대화 버튼 활성화
+            this.MaximizeBox = true;
         }
 
         public void AddForm(TabPage tp, Form f)
@@ -106,6 +109,18 @@ namespace PVPlus.UI
         public void SetVersionText(string text)
         {
             Text = text;
+        }
+
+        public void HideForm(bool status)
+        {
+            if(status)
+            {
+                tabControl1.Hide();              
+            }
+            else
+            {
+                tabControl1.Show();
+            }         
         }
     }
 }

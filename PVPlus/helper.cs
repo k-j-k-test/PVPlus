@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Reflection;
+using System.Security.AccessControl;
 
 namespace PVPlus
 {
@@ -198,14 +199,44 @@ namespace PVPlus
 
         //산출 값(다른 담보의 값)
 
+        public static Dictionary<string, double> OtherRiderCache = new Dictionary<string, double>();
+
+        public static string GetCacheKey(Dictionary<string, object> otherVariables, string cacheType)
+        {
+            var org = variables.TakeWhile(x => x.Key != "q1").ToDictionary(k => k.Key, v => v.Value);
+
+            foreach(var s in otherVariables)
+            {
+                org[s.Key] = s.Value;
+            }
+
+            return cacheType + "_" + string.Join("|", org.Select(x => x.Value));
+        }
+
         public static double Ax(string riderCode, int age, int n)
         {
             //일시납 보험료
             Dictionary<string, object> otherVariables = new Dictionary<string, object>() { { "Age", age }, {"F5", age }, { "n", n }, { "m", 0 }, { "Freq", 99 }, { "S3", 0 }, {"S5", 0 } };
 
-            PVCalculator cal = lineInfo.GetPVCalculator(riderCode, otherVariables);
+            string cacheKey = GetCacheKey(otherVariables, "Ax");
 
-            return cal.Get순보험료(n, 0, 0, 99);
+            if (OtherRiderCache.ContainsKey(cacheKey))
+            {
+                return OtherRiderCache[cacheKey];
+            }
+            else
+            {
+                if(OtherRiderCache.Count() > 500000)
+                {
+                    //메모리 관리
+                    OtherRiderCache.Clear();
+                }
+
+                PVCalculator cal = lineInfo.GetPVCalculator(riderCode, otherVariables);
+                double val = cal.Get순보험료(n, 0, 0, 99);
+                OtherRiderCache[cacheKey] = val;
+                return val;
+            }
         }
 
         public static double GP(string riderCode, int age, int n, int m, int freq)

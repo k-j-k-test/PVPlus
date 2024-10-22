@@ -383,17 +383,7 @@ namespace PVPlus.RULES
             otherVariables.Keys.ToList().ForEach(x => variables[x] = otherVariables[x]);
             //ChangeVariables();
 
-            string PVGenKey = GetPVGeneratorKey();
-            PVCalculator cal;
-
-            if (helper.pvCals.ContainsKey(PVGenKey))
-            {
-                cal = helper.pvCals[PVGenKey];
-            }
-            else
-            {
-                cal = GetPVCalculator();
-            }
+            PVCalculator cal = GetPVCalculator();
 
             //RiderRule, Variables 복원
             if (otherRiderCode != null) RiderCode = orgRiderCode;

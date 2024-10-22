@@ -17,11 +17,16 @@ using PVPlus.UI;
 using System.Configuration;
 using PVPlus.UI.TextModifier;
 using Newtonsoft.Json;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Runtime.InteropServices;
 
 namespace PVPlus
 {
     public partial class MainPVForm : Form
     {
+        [DllImport("user32.dll")]
+        static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
         public MainPVForm()
         {
             InitializeComponent();
@@ -115,6 +120,11 @@ namespace PVPlus
             textBoxPPath.Text = Properties.Settings.Default.PTablePath;
             textBoxVPath.Text = Properties.Settings.Default.VTablePath;
             textBoxSPath.Text = Properties.Settings.Default.STablePath;
+
+            textBoxExcelPath.Select(textBoxExcelPath.Text.Length, 0);
+            textBoxPPath.Select(textBoxPPath.Text.Length, 0);
+            textBoxVPath.Select(textBoxVPath.Text.Length, 0);
+            textBoxSPath.Select(textBoxSPath.Text.Length, 0);
 
             textBoxProduct.Text = Properties.Settings.Default.ProductCode;
             comboBoxCompany.SelectedItem = Properties.Settings.Default.CompanyName;
@@ -260,6 +270,20 @@ namespace PVPlus
             }
         }
 
+        private void btnOpenExcelPath_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog ofdlg = new OpenFileDialog())
+            {
+                ofdlg.ShowDialog();
+
+                if (ofdlg.FileName != "")
+                {
+                    textBoxExcelPath.Text = ofdlg.FileName;
+                    textBoxExcelPath.Select(textBoxExcelPath.Text.Length, 0);
+                }
+            }
+        }
+
         private void btnOpenPTable_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog ofdlg = new OpenFileDialog())
@@ -269,6 +293,7 @@ namespace PVPlus
                 if (ofdlg.FileName != "")
                 {
                     textBoxPPath.Text = ofdlg.FileName;
+                    textBoxPPath.Select(textBoxPPath.Text.Length, 0);
                 }
             }
         }
@@ -282,6 +307,7 @@ namespace PVPlus
                 if (ofdlg.FileName != "")
                 {
                     textBoxVPath.Text = ofdlg.FileName;
+                    textBoxVPath.Select(textBoxVPath.Text.Length, 0);
                 }
             }
         }
@@ -295,23 +321,32 @@ namespace PVPlus
                 if (ofdlg.FileName != "")
                 {
                     textBoxSPath.Text = ofdlg.FileName;
+                    textBoxSPath.Select(textBoxSPath.Text.Length, 0);
                 }
             }
         }
 
-        private void btnOpenExcelPath_Click(object sender, EventArgs e)
+        private void textBoxExcelPath_TextChanged(object sender, EventArgs e)
         {
-            using (OpenFileDialog ofdlg = new OpenFileDialog())
-            {
-                ofdlg.ShowDialog();
 
-                if (ofdlg.FileName != "")
-                {
-                    textBoxExcelPath.Text = ofdlg.FileName;
-                }
-            }
         }
-        
+
+        private void textBoxPPath_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBoxVPath_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBoxSPath_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+
         private void checkBox구분자_CheckedChanged(object sender, EventArgs e)
         {
             if(checkBox구분자.Checked)
@@ -497,7 +532,7 @@ namespace PVPlus
                 {
                     if (VersionChecker.IsUpdateAvailable(CurrentVersion, LastestVersion))
                     {
-                        linkLabel1.Text = $"v{LastestVersion} 패치";
+                        linkLabel1.Text = $"{LastestVersion} 패치";
                     }
                 }
             }
@@ -509,7 +544,7 @@ namespace PVPlus
 
         private async void Patch()
         {
-            DialogResult dialogResult = MessageBox.Show(text: $"새 버전 v{LastestVersion}이 확인 되었습니다. 패치를 진행 하시겠습니까?", buttons: MessageBoxButtons.YesNo, icon: MessageBoxIcon.Information, caption: "패치안내");
+            DialogResult dialogResult = MessageBox.Show(text: $"새 버전 {LastestVersion}이 확인 되었습니다. 패치를 진행 하시겠습니까?", buttons: MessageBoxButtons.YesNo, icon: MessageBoxIcon.Information, caption: "패치안내");
 
             if (dialogResult == DialogResult.Yes)
             {
@@ -532,7 +567,9 @@ namespace PVPlus
             Patch();
         }
 
+
         #endregion
+
     }
 
 }
