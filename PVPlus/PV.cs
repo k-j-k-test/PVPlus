@@ -1,11 +1,13 @@
 ﻿using Flee.PublicTypes;
 using PVPlus.PVCALCULATOR;
 using PVPlus.RULES;
+using PVPlus.UI;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography;
@@ -18,17 +20,21 @@ namespace PVPlus
     {
         private MainPVForm form;
 
-        private StreamReader sr;
-        private StreamWriter sw정상건;
-        private StreamWriter sw오차건;
-        private StreamWriter sw오차건원본;
-        private StreamWriter sw오류건원본;
-        private StreamWriter sw신계약비한도초과건;
-        private StreamWriter sw부가보험료한도초과건;
+        public static StreamReader sr;
+        public static StreamWriter sw정상건;
+        public static StreamWriter sw오차건;
+        public static StreamWriter sw오차건원본;
+        public static StreamWriter sw오류건원본;
+        public static StreamWriter sw신계약비한도초과건;
+        public static StreamWriter sw부가보험료한도초과건;
+        public static StreamWriter sw라인요약;
 
         public static DataReader reader;
         public static RuleFinder finder;
         public static VariableCollection variables;
+
+        public static Dictionary<string, LineSummary> lineSummaries { get; set; }
+        public static List<LineSummary> lineSummariesTemp { get; set; }
 
         public int 정상건Cnt = 0;
         public int 오차건Cnt = 0;
@@ -56,6 +62,7 @@ namespace PVPlus
                 using (sw오류건원본)
                 using (sw신계약비한도초과건)
                 using (sw부가보험료한도초과건)
+                using (sw라인요약)
                 {
                     while (!sr.EndOfStream)
                     {
@@ -65,6 +72,12 @@ namespace PVPlus
 
                         ProgressMsg = $"\r정상건:{정상건Cnt}, 오차건:{오차건Cnt}, 오류건:{오류건Cnt}, 진행률:{100.0 * sr.BaseStream.Position / sr.BaseStream.Length:F2}%";
                         if (IsCanceled) break;
+                    }
+
+                    if (sw라인요약.BaseStream != null)
+                    {
+                        List<string> lines = LineSummaryText();
+                        lines.ForEach(x => sw라인요약.WriteLine(x));
                     }
                 }
             }
@@ -371,7 +384,7 @@ namespace PVPlus
             sw오류건원본 = new StreamWriter($"{tableFullNameWithoutExtension}_{tableAddName}오류건원본{tableExtension}");
             sw신계약비한도초과건 = (Configure.TableType == TableType.StdAlpha && Configure.LimitExcessChecked) ? new StreamWriter($"{tableFullNameWithoutExtension}_신계약비한도초과건{tableExtension}") : null;
             sw부가보험료한도초과건 = (Configure.TableType == TableType.P && Configure.LimitExcessChecked) ? new StreamWriter($"{tableFullNameWithoutExtension}_부가보험료한도초과건{tableExtension}") : null;
-
+            sw라인요약 = (Configure.LineSummaryChecked) ? new StreamWriter($"{tableFullNameWithoutExtension}_라인요약{tableExtension}") : null;
         }
 
         private void SetData()
@@ -387,6 +400,118 @@ namespace PVPlus
             
             finder = new RuleFinder(reader);
             variables = reader.Context.Variables;
+
+            //Reset helper class 
+            Reset(typeof(helper));
+
+            lineSummaries = new Dictionary<string, LineSummary>();
+            lineSummariesTemp = new List<LineSummary>();
+        }
+
+        private List<string> LineSummaryText()
+        {
+            var lines = new List<string>();
+            lines.Add(string.Join("\t", "담보코드", "종구분", "갱신구분", "납입기간", "보험기간", "연령범위", "중간연령", "연령개수", "연령당건수", "개수"));
+
+            // 타입 패턴별로 그룹화
+            var typeGroups = lineSummaries
+                .GroupBy(x => {
+                    var parts = x.Key.Split('\t');
+                    return string.Join("\t",
+                        parts.Skip(1)  // 담보코드를 제외한 나머지 부분
+                        .Concat(new[] {
+                    x.Value.AgeRange(),
+                    x.Value.MidAge().ToString(),
+                    x.Value.AgeCount().ToString(),
+                    x.Value.AgeMult().ToString(),
+                    x.Value.Count.ToString()
+                        }));
+                });
+
+            foreach (var typeGroup in typeGroups)
+            {
+                // 같은 타입 패턴을 가진 담보코드들을 추출
+                var guaranteeCodes = typeGroup
+                    .Select(x => x.Key.Split('\t')[0])
+                    .OrderBy(x => x);
+
+                // 담보코드들을 콤마로 연결
+                var combinedCodes = string.Join(",", guaranteeCodes);
+
+                // 첫 번째 항목의 데이터를 가져와서 라인 생성
+                var firstItem = typeGroup.First();
+                var parts = firstItem.Key.Split('\t');
+
+                var line = string.Join("\t",
+                    combinedCodes,  // 콤마로 구분된 담보코드들
+                    string.Join("\t", parts.Skip(1)),  // 나머지 정보
+                    firstItem.Value.AgeRange(),
+                    firstItem.Value.MidAge(),
+                    firstItem.Value.AgeCount(),
+                    firstItem.Value.AgeMult(),
+                    firstItem.Value.Count);
+
+                lines.Add(line);
+            }
+
+            return lines;
+        }
+
+        public static void Reset(Type type)
+        {
+            var members = type.GetMembers(BindingFlags.Public | BindingFlags.Static)
+                .Where(m => m.MemberType == MemberTypes.Property || m.MemberType == MemberTypes.Field);
+
+            foreach (var member in members)
+            {
+                Type memberType;
+                object defaultValue;
+                bool canSet = true;
+
+                if (member is PropertyInfo prop)
+                {
+                    memberType = prop.PropertyType;
+                    canSet = prop.CanWrite;
+                }
+                else
+                {
+                    memberType = ((FieldInfo)member).FieldType;
+                }
+
+                if (!canSet) continue;
+
+                if (memberType.IsGenericType)
+                {
+                    var genericType = memberType.GetGenericTypeDefinition();
+                    if (genericType == typeof(Dictionary<,>) ||
+                        genericType == typeof(List<>) ||
+                        genericType == typeof(HashSet<>))
+                    {
+                        defaultValue = Activator.CreateInstance(memberType);
+                    }
+                    else if (memberType.IsValueType)
+                    {
+                        defaultValue = Activator.CreateInstance(memberType);
+                    }
+                    else
+                    {
+                        defaultValue = null;
+                    }
+                }
+                else if (memberType.IsValueType)
+                {
+                    defaultValue = Activator.CreateInstance(memberType);
+                }
+                else
+                {
+                    defaultValue = null;
+                }
+
+                if (member is PropertyInfo p)
+                    p.SetValue(null, defaultValue);
+                else
+                    ((FieldInfo)member).SetValue(null, defaultValue);
+            }
         }
     }
 }

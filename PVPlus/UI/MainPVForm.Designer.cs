@@ -68,6 +68,7 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label6 = new System.Windows.Forms.Label();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
+            this.checkBoxLineSummary = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -143,6 +144,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.checkBoxLineSummary);
             this.groupBox1.Controls.Add(this.label5);
             this.groupBox1.Controls.Add(this.checkBoxSample);
             this.groupBox1.Controls.Add(this.comboBoxCompany);
@@ -461,6 +463,16 @@
             this.linkLabel1.TabIndex = 28;
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
+            // checkBoxLineSummary
+            // 
+            this.checkBoxLineSummary.AutoSize = true;
+            this.checkBoxLineSummary.Location = new System.Drawing.Point(93, 90);
+            this.checkBoxLineSummary.Name = "checkBoxLineSummary";
+            this.checkBoxLineSummary.Size = new System.Drawing.Size(76, 16);
+            this.checkBoxLineSummary.TabIndex = 13;
+            this.checkBoxLineSummary.Text = "라인 요약";
+            this.checkBoxLineSummary.UseVisualStyleBackColor = true;
+            // 
             // MainPVForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -550,5 +562,6 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.LinkLabel linkLabel1;
         private System.Windows.Forms.CheckBox checkBoxSample;
+        private System.Windows.Forms.CheckBox checkBoxLineSummary;
     }
 }

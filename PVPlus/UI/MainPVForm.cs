@@ -103,6 +103,8 @@ namespace PVPlus
             {
                 throw new Exception("파일이 존재하지 않습니다. - " + Configure.PVSTableInfo.Name + '\n');
             }
+
+            Configure.LineSummaryChecked = checkBoxLineSummary.Checked;
         }
 
         public void ReportExeption(Exception ex)

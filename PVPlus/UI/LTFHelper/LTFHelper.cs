@@ -968,4 +968,198 @@ namespace PVPlus.UI
             }
         }
     }
+
+
+    public class TextFileReader
+    {
+        private readonly string _filePath;
+        private readonly Encoding _encoding;
+        private readonly Dictionary<string, List<long>> _index;
+        private readonly Func<string, string> _keySelector;
+
+        public bool IsIndexed { get { return _index.Count > 0; } }
+        public double Progress { get; private set; }
+        public bool IsCanceled { get; set; }
+        public int BufferSize { get; set; }
+
+        public TextFileReader(string filePath, Func<string, string> keySelector)
+        {
+            _filePath = filePath;
+            _encoding = Encoding.UTF8;
+            _keySelector = keySelector;
+            _index = new Dictionary<string, List<long>>();
+            BufferSize = 50000;
+        }
+
+        public TextFileReader(string filePath, Func<string, string> keySelector, Encoding encoding)
+            : this(filePath, keySelector)
+        {
+            _encoding = encoding;
+        }
+
+        public void CreateIndex()
+        {
+            _index.Clear();
+            string previousKey = null;
+            long position = 0;
+            long fileSize = new FileInfo(_filePath).Length;
+
+            using (FileStream fs = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (StreamReader reader = new StreamReader(fs, _encoding))
+            {
+                while (!reader.EndOfStream && !IsCanceled)
+                {
+                    string line = reader.ReadLine();
+                    string currentKey = _keySelector(line);
+
+                    if (previousKey != currentKey)
+                    {
+                        if (!_index.ContainsKey(currentKey))
+                        {
+                            _index[currentKey] = new List<long>();
+                        }
+                        _index[currentKey].Add(position);
+                    }
+
+                    previousKey = currentKey;
+                    position = fs.Position;
+                    Progress = (double)position / fileSize;
+                }
+            }
+        }
+
+        public void SaveIndex(string indexPath)
+        {
+            using (StreamWriter writer = new StreamWriter(indexPath, false, _encoding))
+            {
+                foreach (KeyValuePair<string, List<long>> pair in _index.OrderBy(x => x.Key))
+                {
+                    writer.WriteLine(string.Format("{0}|{1}",
+                        pair.Key,
+                        string.Join(",", pair.Value.ConvertAll(x => x.ToString()).ToArray())));
+                }
+            }
+        }
+
+        public void LoadIndex(string indexPath)
+        {
+            _index.Clear();
+            using (StreamReader reader = new StreamReader(indexPath, _encoding))
+            {
+                while (!reader.EndOfStream)
+                {
+                    string line = reader.ReadLine();
+                    string[] parts = line.Split('|');
+                    if (parts.Length == 2)
+                    {
+                        string key = parts[0];
+                        List<long> positions = parts[1]
+                            .Split(',')
+                            .Select(x => long.Parse(x))
+                            .ToList();
+                        _index[key] = positions;
+                    }
+                }
+            }
+        }
+
+        public List<string> GetLines(string key)
+        {
+            List<string> results = new List<string>();
+
+            if (!_index.ContainsKey(key))
+                return results;
+
+            using (FileStream fs = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (StreamReader reader = new StreamReader(fs, _encoding))
+            {
+                foreach (long position in _index[key])
+                {
+                    if (IsCanceled) break;
+
+                    fs.Position = position;
+                    string line = reader.ReadLine();
+
+                    while (line != null && _keySelector(line) == key)
+                    {
+                        results.Add(line);
+                        line = reader.ReadLine();
+                        if (line == null) break;
+                    }
+                }
+            }
+
+            return results;
+        }
+
+        public void ProcessFile(Action<List<string>> processAction)
+        {
+            List<string> buffer = new List<string>();
+            long fileSize = new FileInfo(_filePath).Length;
+
+            using (FileStream fs = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (StreamReader reader = new StreamReader(fs, _encoding))
+            {
+                while (!reader.EndOfStream && !IsCanceled)
+                {
+                    buffer.Clear();
+                    for (int i = 0; i < BufferSize && !reader.EndOfStream; i++)
+                    {
+                        buffer.Add(reader.ReadLine());
+                    }
+
+                    if (buffer.Count > 0)
+                    {
+                        processAction(buffer);
+                    }
+
+                    Progress = (double)fs.Position / fileSize;
+                }
+            }
+        }
+
+        public List<string> GetUniqueKeys()
+        {
+            return new List<string>(_index.Keys);
+        }
+    }
+
+    public class TextFileWriter
+    {
+        private readonly string _filePath;
+        private readonly Encoding _encoding;
+        private readonly bool _append;
+
+        public TextFileWriter(string filePath, bool append = false)
+        {
+            _filePath = filePath;
+            _encoding = Encoding.UTF8;
+            _append = append;
+        }
+
+        public TextFileWriter(string filePath, Encoding encoding, bool append = false)
+            : this(filePath, append)
+        {
+            _encoding = encoding;
+        }
+
+        public void WriteLines(IEnumerable<string> lines)
+        {
+            using (StreamWriter writer = new StreamWriter(_filePath, _append, _encoding))
+            {
+                foreach (string line in lines)
+                {
+                    writer.WriteLine(line);
+                }
+            }
+        }
+
+        public void WriteLine(string line)
+        {
+            using (StreamWriter writer = new StreamWriter(_filePath, _append, _encoding))
+            {
+                writer.WriteLine(line);
+            }
+        }
+    }
 }

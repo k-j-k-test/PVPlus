@@ -90,3 +90,17 @@ Samsung					GP5	Max(Round2(Eval("GP_UNIT",n,m,0,2)*Amount,0),1)	삼성 갱신상
 Samsung					GP6	Max(Round2(Eval("GP_UNIT",n,m,0,1)*Amount,0),1)	삼성 갱신상품
 Post				t<Min(5,m)	DAC_UNIT	Eval("ALPHA_UNIT",n,m,0,Freq)*(Min(5,m)-t)/Min(5,m)	우체국용 임시
 Post				t>=Min(5,m)	DAC_UNIT	0	우체국용 임시
+Heungkuk		S4>0 OR Freq=99			V2_UNIT	RoundA(Eval("V",n,m,t,Freq))	
+Heungkuk		S4=0			V2_UNIT	RoundA(Eval("V",n,m,t,12))	
+Heungkuk		Freq=0			ALPHA_UNIT	12.0*RoundA(Eval("GP_UNIT",n,m,0,1))*Ex("Alpha_P")+Ex("Alpha_S")	
+Heungkuk		Freq>0			ALPHA_UNIT	(12.0/Freq)*RoundA(Eval("GP_UNIT",n,m,0,Freq))*Ex("Alpha_P")+Ex("Alpha_S")	
+Heungkuk					STDNP_UNIT	Eval("NP",n,Min(n,20),0,12)	
+Heungkuk				t<Min(7,m)	DAC_UNIT	RoundA(Min(Eval("ALPHA_UNIT",n,m,t,Freq),Eval("STDALPHA_UNIT",n,m,t,Freq))*(Min(7,m)-t)/Min(7,m))	
+Heungkuk				t>=Min(7,m)	DAC_UNIT	0	
+Heungkuk					W_UNIT	PositiveMax(RoundA(Eval("V_UNIT",n,m,t,Freq))-RoundA(Eval("DAC_UNIT",n,m,t,Freq)))	
+Heungkuk					TempCK0	If(ElapseYear<m, 0, Round(0.5*RoundA(V(ElapseYear))*Amount, 0))	
+Heungkuk					TempCK1	If(ElapseYear<m, 0, Round(0.5*RoundA(V(ElapseYear+1))*Amount, 0))	
+Heungkuk		S_Type=1			STDALPHA_UNIT	RoundDown((0.05*Min(n,20)+0.45)*Eval("STDNP_UNIT",n,m,t,12)*Amount,0)/Amount	
+Heungkuk		S_Type=2			STDALPHA_UNIT	RoundDown((0.05*Min(n,20)*Eval("STDNP_UNIT",n,m,t,12)+0.01*Eval("Min_S"))*Amount,0)/Amount	
+Heungkuk		S_Type=3			STDALPHA_UNIT	RoundDown((0.05*Min(n,20)+0.15*Eval("STDNP_UNIT",n,m,t,12))*Amount,0)/Amount	
+

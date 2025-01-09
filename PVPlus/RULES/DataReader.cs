@@ -18,12 +18,6 @@ namespace PVPlus.RULES
             Context = new ExpressionContext();
             Context.Imports.AddType(typeof(Math));
             Context.Imports.AddType(typeof(helper));
-
-            //helper클래스 초기화
-            typeof(helper).GetProperties()
-                .Where(x => x.MemberType == System.Reflection.MemberTypes.Property || x.MemberType == System.Reflection.MemberTypes.Field)
-                .ToList().ForEach(x => x.SetValue(this, x.GetType().IsValueType ? Activator.CreateInstance(x.GetType()) : null));
-
             ReadOrUpdateAll();
         }
 

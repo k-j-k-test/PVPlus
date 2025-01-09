@@ -201,7 +201,7 @@ namespace PVPlus
 
         public static Dictionary<string, double> OtherRiderCache = new Dictionary<string, double>();
 
-        public static string GetCacheKey(Dictionary<string, object> otherVariables, string cacheType)
+        public static string GetCacheKey(string riderCode, Dictionary<string, object> otherVariables, string cacheType)
         {
             var org = variables.TakeWhile(x => x.Key != "q1").ToDictionary(k => k.Key, v => v.Value);
 
@@ -210,7 +210,7 @@ namespace PVPlus
                 org[s.Key] = s.Value;
             }
 
-            return cacheType + "_" + string.Join("|", org.Select(x => x.Value));
+            return cacheType + "_" + riderCode + "_" + string.Join("|", org.Select(x => x.Value));
         }
 
         public static double Ax(string riderCode, int age, int n)
@@ -218,7 +218,7 @@ namespace PVPlus
             //일시납 보험료
             Dictionary<string, object> otherVariables = new Dictionary<string, object>() { { "Age", age }, {"F5", age }, { "n", n }, { "m", 0 }, { "Freq", 99 }, { "S3", 0 }, {"S5", 0 } };
 
-            string cacheKey = GetCacheKey(otherVariables, "Ax");
+            string cacheKey = GetCacheKey(riderCode, otherVariables, "Ax");
 
             if (OtherRiderCache.ContainsKey(cacheKey))
             {
@@ -279,7 +279,6 @@ namespace PVPlus
 
             return cal.Get위험보험료(n, m, 0, freq);
         }
-
 
 
         //저해지의 표준형 산출 값

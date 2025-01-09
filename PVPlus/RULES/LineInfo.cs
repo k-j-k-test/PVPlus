@@ -4,6 +4,7 @@ using System;
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Cache;
 using System.Reflection;
 using System.Security.Policy;
 using System.Text;
@@ -22,7 +23,6 @@ namespace PVPlus.RULES
         public string RiderCode { get; set; }
 
         public Dictionary<string, Layout> layouts { get; set; }
-
         public VariableCollection variables;
 
         public LineInfo(string line)
@@ -63,6 +63,8 @@ namespace PVPlus.RULES
 
         public PVResult CalculateLine()
         {
+            AddLineSummary();
+
             string CurMP = GetLayoutMP();
             string PreMP = helper.PreMP;
 
@@ -287,6 +289,66 @@ namespace PVPlus.RULES
 
             return item;
         }
+        public void AddLineSummary()
+        {
+            if (!Configure.LineSummaryChecked) return;
+            if (PV.sr.BaseStream == null || PV.sw라인요약.BaseStream == null) return;
+
+            LineSummary lineSummary = new LineSummary();
+
+            lineSummary.RiderCode = RiderCode;
+            lineSummary.Jong = (int)variables["Jong"];
+            lineSummary.S1 = (int)variables["S1"];
+            lineSummary.n = (int)variables["n"];
+            lineSummary.m = (int)variables["m"];
+            lineSummary.Age = (int)variables["Age"];
+            PV.lineSummariesTemp.Add(lineSummary);
+
+            while (PV.lineSummariesTemp.Count() % 100000 == 99999 || (PV.sr.EndOfStream && PV.lineSummariesTemp.Count() > 0))
+            {
+                string selectedRiderCode = PV.lineSummariesTemp.First().RiderCode;
+                List<LineSummary> selectedLineSummaries = PV.lineSummariesTemp.Where(x => x.RiderCode == selectedRiderCode).ToList();
+
+                var group1 = selectedLineSummaries.GroupBy(x => x.n);
+                var group2 = selectedLineSummaries.GroupBy(x => x.Age + x.n);
+
+                if(group1.Count() > group2.Count())
+                {
+                    //세만기 가정
+                    foreach (var line in selectedLineSummaries)
+                    {
+                        line.MaturityAge = line.Age + line.n;
+                        string key = string.Join("\t", line.RiderCode, line.Jong, line.S1, line.m, line.MaturityAge + "세");
+
+                        if (!PV.lineSummaries.ContainsKey(key))
+                        {
+                            PV.lineSummaries.Add(key, line);
+                        }
+
+                        PV.lineSummaries[key].Count++;
+                        PV.lineSummaries[key].Ages.Add(line.Age);
+                    }
+                }
+                else
+                {
+                    //연만기 가정
+                    foreach (var line in selectedLineSummaries)
+                    {
+                        string key = string.Join("\t", line.RiderCode, line.Jong, line.S1, line.m, line.n) ;
+
+                        if (!PV.lineSummaries.ContainsKey(key))
+                        {
+                            PV.lineSummaries.Add(key, line);
+                        }
+
+                        PV.lineSummaries[key].Count++;
+                        PV.lineSummaries[key].Ages.Add(line.Age);
+                    }
+                }
+
+                PV.lineSummariesTemp.RemoveAll(x => x.RiderCode == selectedRiderCode);
+            }
+        }
 
         public string GetPVGeneratorKey()
         {
@@ -390,6 +452,107 @@ namespace PVPlus.RULES
             orgVariables.Keys.ToList().ForEach(x => variables[x] = orgVariables[x]);
 
             return cal;
+        }
+    }
+
+    public class LineSummary
+    {
+        public string RiderCode { get; set; }
+        public int Jong { get; set; }
+        public int S1 { get; set; }
+        public int n { get; set; }
+        public int MaturityAge { get; set; }
+        public int m { get; set; }
+        public int Age { get; set; }
+
+        public List<int> Ages = new List<int>();
+        public int Count { get; set; }
+
+        public string AgeRange()
+        {
+            return ConvertSequenceToRangeString(Ages);
+        }
+
+        public int MidAge()
+        {
+            if (!Ages.Any()) return 0;
+
+            // MaturityAge가 0이고 Ages에 40이 포함된 경우
+            if (MaturityAge == 0 && Ages.Contains(40))
+                return 40;
+
+            var distinctAges = Ages.Distinct().OrderBy(x => x).ToList();
+            if (distinctAges.Count == 1)
+                return distinctAges[0];
+
+            // 중간 인덱스 계산 (짝수 개수일 경우 두 중간값의 평균)
+            int middleIndex = distinctAges.Count / 2;
+            if (distinctAges.Count % 2 == 0)
+            {
+                double average = (distinctAges[middleIndex - 1] + distinctAges[middleIndex]) / 2.0;
+                return (int)Math.Ceiling(average);
+
+            }
+            return distinctAges[middleIndex];
+        }
+
+        public double AgeCount()
+        {
+            if (Ages == null)
+                return 0;
+
+            return Ages.Distinct().Count();
+        }
+
+        public double AgeMult()
+        {
+            var ageCount = AgeCount();
+            if (ageCount == 0)
+                return 0;
+
+            return Count / ageCount;
+        }
+
+        public string ConvertSequenceToRangeString(IEnumerable<int> numbers)
+        {
+            if (numbers == null || !numbers.Any())
+                return string.Empty;
+
+            // 열거형을 정렬된 리스트로 변환
+            var sortedNumbers = numbers.OrderBy(x => x).Distinct().ToList();
+
+            var result = new StringBuilder();
+            int rangeStart = sortedNumbers[0];
+            int previous = sortedNumbers[0];
+
+            // 첫 번째 숫자 추가
+            result.Append(rangeStart);
+
+            for (int i = 1; i < sortedNumbers.Count; i++)
+            {
+                int current = sortedNumbers[i];
+
+                // 연속되지 않은 숫자인 경우
+                if (current != previous + 1)
+                {
+                    // 이전 범위 마무리
+                    if (previous != rangeStart)
+                    {
+                        result.Append('~').Append(previous);
+                    }
+                    result.Append(',').Append(current);
+                    rangeStart = current;
+                }
+                // 마지막 숫자인 경우
+                else if (i == sortedNumbers.Count - 1)
+                {
+                    result.Append('~').Append(current);
+                }
+
+                previous = current;
+            }
+
+            return result.ToString();
         }
     }
 

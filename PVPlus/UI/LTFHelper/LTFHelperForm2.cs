@@ -414,7 +414,6 @@ namespace PVPlus.UI
             return key;
         }
 
-
         private void dataGridView1_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -886,7 +885,6 @@ namespace PVPlus.UI
             catch { }
         }
 
-
         private void timer1_Tick(object sender, EventArgs e)
         {
             if (comboBox1.SelectedItem.ToString() == "Group") return;
@@ -965,6 +963,21 @@ namespace PVPlus.UI
                         for (int i = 0; i < dataGridView1.Rows.Count; i++)
                         {
                             dataGridView1.Rows[i].Cells[1].Value = "a1+a2+a3+a4";
+                        }
+                    }
+                }
+                if (comboBoxPreset.SelectedItem.ToString() == "Heungkuk")
+                {
+                    textBoxBlue.Text = "24";
+
+                    MultOptForm.textBoxGroupName.Text = "If(Count(1) = 0, \"MatchFailed\", If(Sum(0, \"a5\") <= Sum(1, \"a5\"), \"True\",\"False\"))";
+                    MultOptForm.textBoxWriteLine.Text = "Join(\"\\t\", Key(), Count(0), Count(1), Sum(0, \"a5\"), Sum(1, \"a5\"), First(0), First(1))";
+
+                    foreach (var item in dataGridView1.Rows)
+                    {
+                        for (int i = 0; i < dataGridView1.Rows.Count; i++)
+                        {
+                            dataGridView1.Rows[i].Cells[1].Value = "Join(\"|\",sub(3),sub(4),sub(5),sub(6),sub(7),sub(8),sub(9),sub(10),sub(11),sub(12),sub(13),sub(14),sub(15),sub(16),sub(17),sub(18),sub(19),sub(20))";
                         }
                     }
                 }

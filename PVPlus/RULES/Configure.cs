@@ -18,8 +18,8 @@ namespace PVPlus.RULES
         public static string SeperationType;
         public static char Delimiter = '\t';
         public static bool LimitExcessChecked;
+        public static bool LineSummaryChecked;
     }
-
 
     //Tables 
     public enum TableType

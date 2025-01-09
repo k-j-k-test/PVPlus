@@ -323,4 +323,9 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties version_1json__JsonSchema="https://raw.githubusercontent.com/evg4b/uncors/main/schema.json" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>
