@@ -418,7 +418,7 @@ namespace PVPlus.RULES
                 {
                     throw new Exception($"PVType{PV_Type}을 찾을 수 없습니다.");
                 }
-                if(ex.InnerException is InvalidCastException)
+                if (ex.InnerException is InvalidCastException)
                 {
                     throw new Exception("캐스트 변환에 실패하였습니다. 레이아웃에서 값을 가져오거나 VarChg시트에 잘못된 cast지정이 있는지 확인바랍니다. ex)int타입의 변수에 double타입의 변수를 넣는 경우..." );
                 }

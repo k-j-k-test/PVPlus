@@ -248,6 +248,7 @@ namespace PVPlus.UI
             "Hanwha",
             "Hyundai",
             "Samsung",
+            "Hana",
             "Heungkuk"});
             this.comboBoxPreset.Location = new System.Drawing.Point(640, 17);
             this.comboBoxPreset.Name = "comboBoxPreset";

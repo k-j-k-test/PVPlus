@@ -21,7 +21,6 @@ namespace PVPlus.UI.TextModifier
 
         private void HanwhaTextModifier_Load(object sender, EventArgs e)
         {
-            JongtextBox.Text = "1 -> (Jong = 1 OR Jong = 2) AND S5 > 1\r\n2 -> (Jong = 1 OR Jong = 2) AND S5 = 0\r\n3 -> (Jong = 3 OR Jong = 4) AND S5 > 1\r\n4 -> (Jong = 3 OR Jong = 4) AND S5 = 0\r\n5 -> (Jong = 5 OR Jong = 6) AND S5 > 1\r\n6 -> (Jong = 5 OR Jong = 6) AND S5 = 0\r\n7 -> (Jong = 7 OR Jong = 8) AND S5 > 1\r\n8 -> (Jong = 7 OR Jong = 8) AND S5 = 0\r\n";
             prdCodeTextBox.Text = "LA";
         }
 
@@ -51,18 +50,6 @@ namespace PVPlus.UI.TextModifier
                     .Select(x => ToHanwhaExpense(x))
                     .ToList();
 
-                Dictionary<int, string> JongConditionMatch = new Dictionary<int, string>();
-
-                foreach (string s in JongtextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.None))
-                {
-                    string[] arr = s.Split(new[] { "->" }, StringSplitOptions.None);
-                    if (arr.Length == 2)
-                    {
-                        int jong = int.Parse(arr[0]);
-                        string condition = arr[1];
-                        JongConditionMatch[jong] = condition;
-                    }
-                }
 
                 ILookup<string, HanwhaExpense> HanwhaExpenseLookup = HanwhaExpenses.ToLookup(x => x.담보코드);
                 StringBuilder res = new StringBuilder();
@@ -92,9 +79,9 @@ namespace PVPlus.UI.TextModifier
 
                         if (t.종코드 > 0)
                         {
-                            if (checkBox1.Checked && JongConditionMatch.ContainsKey(t.종코드) && t.만기구분코드 == "세") condition1.Add(JongConditionMatch[t.종코드]);
-                            else condition1.Add($"Jong = {t.종코드}");
+                            condition1.Add($"Jong = {t.종코드}");
                         }
+
                         if (t.최초갱신구분코드 == "최초") condition2.Add($"S1=0");
                         if (t.최초갱신구분코드 == "갱신") condition2.Add($"S1>0");
 
@@ -105,11 +92,24 @@ namespace PVPlus.UI.TextModifier
                         }
                         if (t.납입기간 > 0) condition3.Add($"m={t.납입기간}");
 
-                        if (t.가변키1.Contains(";")) condition4.Add($"F6={t.가변키1.Split(';')[1]}");
-                        if (t.가변키2.Contains(";")) condition4.Add($"F7={t.가변키2.Split(';')[1]}");
-                        if (t.가변키3.Contains(";")) condition4.Add($"F8={t.가변키3.Split(';')[1]}");
-                        if (t.가변키4.Contains(";")) condition4.Add($"F9={t.가변키4.Split(';')[1]}");
-                        if (t.가변키5.Contains(";")) condition4.Add($"F10={t.가변키5.Split(';')[1]}");
+                        Dictionary<string, string> 가변키Dict = new Dictionary<string, string>();
+
+                        foreach(string 가변키 in new string[] { t.가변키1, t.가변키2, t.가변키3, t.가변키4, t.가변키5 })
+                        {
+                            if (가변키 != "0")
+                            {
+                                string[] arr = 가변키.Split(';');
+                                가변키Dict[arr[0]] = arr[1];
+                            }
+                        }
+
+                        if (가변키Dict.ContainsKey("요율구분"))
+                        {
+                            if (가변키Dict["요율구분"] == "1")
+                            {
+                                continue;
+                            }
+                        }
 
                         ex.상품코드 = prdCodeTextBox.Text;
                         ex.담보코드 = s.Key;
@@ -118,14 +118,14 @@ namespace PVPlus.UI.TextModifier
                         ex.조건3 = string.Join(" AND ", condition3);
                         ex.조건4 = string.Join(" AND ", condition4);
 
-                        ex.Alpha_S = (t.신계약비1 / 1000).ToString();
-                        ex.Alpha_P = (t.신계약비2 / 100).ToString();
-                        ex.Beta_P = (t.유지비1 / 100).ToString();
-                        ex.Beta_S = (t.유지비2 / 1000).ToString();
-                        ex.Betaprime_P = ((t.유지비3 + t.손해조사비2) / 100).ToString();
-                        ex.Betaprime_S = (t.유지비4 / 1000).ToString();
-                        ex.Gamma = (t.감마 / 100).ToString();
-                        ex.Ce = (t.손해조사비1 / 100).ToString();
+                        ex.Alpha_S = t.신계약비1 == 0 ? "" : (t.신계약비1 / 100).ToString();
+                        ex.Alpha_P = t.신계약비2 == 0 ? "" : (t.신계약비2 / 100).ToString();
+                        ex.Beta_P = t.유지비1 == 0 ? "" : (t.유지비1 / 100).ToString();
+                        ex.Beta_S = t.유지비2 == 0 ? "" : (t.유지비2 / 100).ToString();
+                        ex.Betaprime_P = ((t.유지비3 + t.손해조사비2) == 0) ? "" : ((t.유지비3 + t.손해조사비2) / 100).ToString();
+                        ex.Betaprime_S = t.유지비4 == 0 ? "" : (t.유지비4 / 100).ToString();
+                        ex.Gamma = t.감마 == 0 ? "" : (t.감마 / 100).ToString();
+                        ex.Ce = t.손해조사비1 == 0 ? "" : (t.손해조사비1 / 100).ToString();
 
                         res.Append(AutoMapper.ClassToString(ex) + "\r\n");
 
@@ -150,7 +150,7 @@ namespace PVPlus.UI.TextModifier
             }
             catch (Exception ex)
             {
-                errorTextBox.Text = ex.Message;
+
             }
         }
     

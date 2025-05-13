@@ -865,7 +865,7 @@ namespace PVPlus.UI
                             continue;
                         }
 
-                        string[] loopItems = MultOptForm.LoopForm.dataGridViewLoop.Rows[i].Cells[j].Value.ToString().Split(',');
+                        string[] loopItems = MultOptForm.LoopForm.dataGridViewLoop.Rows[i].Cells[j].Value.ToString().Split(',').Select(x => x.Trim()).ToArray();
                         List<bool> loopFileExist = new List<bool>();
 
                         for (int k = 0; k < loopItems.Count(); k++)
@@ -945,6 +945,14 @@ namespace PVPlus.UI
 
         private void comboBoxPreset_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (comboBox1.SelectedItem.ToString() == "Split")
+            {
+                if (comboBoxPreset.SelectedItem.ToString() == "Hanwha") textBoxYello.Text = "10,8";
+                if (comboBoxPreset.SelectedItem.ToString() == "Hyundai") textBoxYello.Text = "20,4";
+                if (comboBoxPreset.SelectedItem.ToString() == "Samsung") textBoxYello.Text = "1";
+                if (comboBoxPreset.SelectedItem.ToString() == "Hana") textBoxYello.Text = "0";
+            }
+
             if (comboBox1.SelectedItem.ToString() == "Group")
             {
                 if (comboBoxPreset.SelectedItem.ToString() == "Hanwha")
@@ -978,6 +986,21 @@ namespace PVPlus.UI
                         for (int i = 0; i < dataGridView1.Rows.Count; i++)
                         {
                             dataGridView1.Rows[i].Cells[1].Value = "Join(\"|\",sub(3),sub(4),sub(5),sub(6),sub(7),sub(8),sub(9),sub(10),sub(11),sub(12),sub(13),sub(14),sub(15),sub(16),sub(17),sub(18),sub(19),sub(20))";
+                        }
+                    }
+                }
+                if (comboBoxPreset.SelectedItem.ToString() == "Hana")
+                {
+                    textBoxBlue.Text = "12";
+
+                    MultOptForm.textBoxGroupName.Text = "If(Count(1) = 0, \"MatchFailed\", If(Sum(0, \"a5\") <= Sum(1, \"a5\"), \"True\",\"False\"))";
+                    MultOptForm.textBoxWriteLine.Text = "Join(\"\\t\", Key(), Count(0), Count(1), Sum(0, \"a5\"), Sum(1, \"a5\"), First(0), First(1))";
+
+                    foreach (var item in dataGridView1.Rows)
+                    {
+                        for (int i = 0; i < dataGridView1.Rows.Count; i++)
+                        {
+                            dataGridView1.Rows[i].Cells[1].Value = "Join(\"|\",sub(1),sub(2),sub(3),sub(4),sub(5),sub(6),sub(7),sub(8),sub(9),sub(10),sub(11))";
                         }
                     }
                 }

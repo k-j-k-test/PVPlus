@@ -4,15 +4,10 @@ using PVPlus.RULES;
 using PVPlus.UI;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Security.Cryptography;
 using System.Text;
-using System.Windows.Forms;
 
 namespace PVPlus
 {
@@ -74,7 +69,7 @@ namespace PVPlus
                         if (IsCanceled) break;
                     }
 
-                    if (sw라인요약.BaseStream != null)
+                    if (sw라인요약 != null && sw라인요약.BaseStream != null)
                     {
                         List<string> lines = LineSummaryText();
                         lines.ForEach(x => sw라인요약.WriteLine(x));

@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms.VisualStyles;
 
 namespace PVPlus.RULES
 {
@@ -85,10 +83,30 @@ namespace PVPlus.RULES
         private void ReadExpenses()
         {
             string path = Path.Combine(Configure.WorkingDI.FullName, "Expense.txt");
+            List<string[]> data = ToArrList(path);
 
-            ExpenseRules = ToArrList(path).Where(x => x[0] == Configure.ProductCode).Select(y => ToExpenseExpression(y)).ToList();
+            List<ExpenseRule> rules = new List<ExpenseRule>();
 
-            if (!ExpenseRules.Any()) throw new Exception($"사업비를 한 줄 이상 입력해 주세요({Configure.ProductCode})");
+            foreach (var row in data)
+            {
+                if (row[0] != Configure.ProductCode)
+                    continue;
+
+                string[] riderCodes = row[1].Split(',');
+
+                foreach (var riderCode in riderCodes)
+                {
+                    string[] newRow = (string[])row.Clone();
+                    newRow[1] = riderCode.Trim(); 
+
+                    rules.Add(ToExpenseExpression(newRow));
+                }
+            }
+
+            ExpenseRules = rules;
+
+            if (!ExpenseRules.Any())
+                throw new Exception($"사업비를 한 줄 이상 입력해 주세요({Configure.ProductCode})");
         }
         private void ReadRateRules()
         {
@@ -415,17 +433,11 @@ namespace PVPlus.RULES
 
         public double ToDoubleOrDefault(string s, double defaultVal)
         {
-            double val = 0;
-            bool isDouble = double.TryParse(s, out val);
-
-            return (isDouble) ? val : defaultVal;
+            return double.TryParse(s, out double val) ? val : defaultVal;
         }
         public int ToIntOrDefault(string s, int defaultVal)
         {
-            int val = 0;
-            bool isInt = int.TryParse(s, out val);
-
-            return (isInt) ? val : defaultVal;
+            return int.TryParse(s, out int val) ? val : defaultVal;
         }
 
         private List<string[]> ToArrList(string path)

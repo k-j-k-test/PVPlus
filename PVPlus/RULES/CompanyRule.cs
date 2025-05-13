@@ -14,7 +14,7 @@ namespace PVPlus.RULES
 
     public enum CompanyNames
     {
-        Hyundai, Hanwha, AIG, Heungkuk, Samsung, MG, Post, KB, KB송부용
+        Hanwha, Hyundai, Samsung, Hana, AIG, Heungkuk, MG, Post, KB, KB송부용
     }
 
     public class Hyundai : ICompanyRule
@@ -30,6 +30,14 @@ namespace PVPlus.RULES
         public string AdjustLine(string line)
         {
             return line.Replace("*", "0");
+        }
+    }
+
+    public class Hana : ICompanyRule
+    {
+        public string AdjustLine(string line)
+        {
+            return line;
         }
     }
 

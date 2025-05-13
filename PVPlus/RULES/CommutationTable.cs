@@ -93,8 +93,6 @@ namespace PVPlus.RULES
             //유지자기수
             double[] Lx = new double[MAXSIZE];
 
-            if ((int)PV.variables["S7"] > 0) return Rate;
-
             Lx[0] = 100000.0;
 
             for (int t = 0; t < n; t++)
@@ -147,21 +145,6 @@ namespace PVPlus.RULES
             }
 
             return Mx;
-        }
-        public virtual double[] GetMxSum(List<double[]> Mxs)
-        {
-            double[] Mx_Sum = new double[MAXSIZE];
-
-            for (int i = 0; i < MAXSIZE; i++)
-            {
-                for (int j = 0; j < Mxs.Count(); j++)
-                {
-                    Mx_Sum[i] += Mxs[j][i];
-                }
-            }
-
-            return Mx_Sum;
-
         }
     }
 }

@@ -189,11 +189,19 @@ namespace PVPlus
         public static double FindQ(int index, int offset)
         {
             //위험률 q1 ~ q30
-            string rateVariableName = $"q{index}";
-            string rateKey = PV.finder.FindRiderRule(lineInfo.RiderCode).RateKeyByRateVariable[rateVariableName];
-            RateRule rateRule = PV.finder.FindRateRule(rateKey, variables);
+            try
+            {
+                string rateVariableName = $"q{index}";
+                string rateKey = PV.finder.FindRiderRule(lineInfo.RiderCode).RateKeyByRateVariable[rateVariableName];
+                RateRule rateRule = PV.finder.FindRateRule(rateKey, variables);
 
-            return rateRule.RateArr[offset];
+                return rateRule.RateArr[offset];
+            }
+            catch
+            {
+                throw new Exception($"위험률 q{index}를 찾을 수 없습니다.");
+            }
+
         }
 
 
@@ -417,6 +425,11 @@ namespace PVPlus
             }
         }
 
+        public static double ThrowError()
+        {
+            throw new Exception("ThrowError 발생");
+        }
+
         #endregion
 
         #region Ifs/Choose/Convert...
@@ -506,6 +519,19 @@ namespace PVPlus
             }
 
             return -1;
+        }
+
+        public static string Left(object item, int count)
+        {
+            return item.ToString().Substring(0, count);
+        }
+        public static string Right(object item, int count)
+        {
+            return item.ToString().Substring(item.ToString().Length - count, count);           
+        }
+        public static string Mid(object item, int start, int count)
+        {
+            return item.ToString().Substring(start - 1, count);
         }
 
         public static double Ifs(Boolean condition1, double val1, double dafaultVal)

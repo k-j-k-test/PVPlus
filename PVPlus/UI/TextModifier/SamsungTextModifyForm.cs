@@ -95,7 +95,7 @@ namespace PVPlus
             {
                 converter = new SamsungTableConverter(P, V, T, E);
                 converter.Start = int.Parse(textBox1.Text.Split(',')[0]);
-                converter.End = int.Parse(textBox1.Text.Split(',')[1]);
+                converter.Count = int.Parse(textBox1.Text.Split(',')[1]);
             }
             catch
             {
@@ -126,11 +126,6 @@ namespace PVPlus
             mainForm.Show();
             mainForm.Close();
         }
-
-        private void labelHelp_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 
     class SamsungTableConverter
@@ -138,7 +133,8 @@ namespace PVPlus
         public string ProgressMessage { get; set; }
 
         public int Start { get; set; }
-        public int End { get; set; }
+        public int Count { get; set; }
+        public int Delimiter { get; set; }
 
         private FileInfo PPath;
         private FileInfo VPath;
@@ -208,7 +204,7 @@ namespace PVPlus
                 while (!sr.EndOfStream)
                 {
                     string line = sr.ReadLine();
-                    string PID = line.Substring(Start, End);
+                    string PID = line.Substring(Start, Count);
                     dict[PID] = line;
                 }
             }
@@ -224,7 +220,7 @@ namespace PVPlus
                 while (!sr.EndOfStream)
                 {
                     string line = sr.ReadLine();
-                    string PID = line.Substring(Start, End);
+                    string PID = line.Substring(Start, Count);
 
                     if (!dict.ContainsKey(PID))
                     {
@@ -253,7 +249,7 @@ namespace PVPlus
                 while (!sr.EndOfStream)
                 {
                     string line = sr.ReadLine();
-                    string PID = line.Substring(Start, End);
+                    string PID = line.Substring(Start, Count);
 
                     if (!dict.ContainsKey(PID))
                     {
@@ -282,7 +278,7 @@ namespace PVPlus
                 while (!sr.EndOfStream)
                 {
                     string line = sr.ReadLine();
-                    string PID = line.Substring(Start, End);
+                    string PID = line.Substring(Start, Count);
 
                     if (!dict.ContainsKey(PID))
                     {
@@ -292,7 +288,20 @@ namespace PVPlus
                     }
 
                     string pLine = dict[PID];
-                    string newLine = pLine + line;
+
+                    string paymentType = line.Substring(0, 1);
+                    string modifiedLine;
+
+                    if (paymentType == "6")
+                    {
+                        modifiedLine = line.Substring(0, 5) + line.Substring(Start + Count);
+                    }
+                    else
+                    {
+                        modifiedLine = line.Substring(1, 4) + line.Substring(Start + Count);
+                    }
+
+                    string newLine = pLine + ";" + modifiedLine;
                     sw.WriteLine(newLine);
 
                     cnt++;
