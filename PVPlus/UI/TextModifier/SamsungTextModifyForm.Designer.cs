@@ -44,7 +44,6 @@
             this.buttonConvert = new System.Windows.Forms.Button();
             this.labelProgress = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.labelHelp = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
@@ -177,34 +176,23 @@
             this.timer1.Interval = 10;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
-            // labelHelp
-            // 
-            this.labelHelp.AutoSize = true;
-            this.labelHelp.Location = new System.Drawing.Point(26, 224);
-            this.labelHelp.Name = "labelHelp";
-            this.labelHelp.Size = new System.Drawing.Size(293, 12);
-            this.labelHelp.TabIndex = 15;
-            this.labelHelp.Text = "삼성화재 P테이블의 ID(PID)를 매칭하는 화면입니다. ";
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(26, 271);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(593, 36);
+            this.label1.Size = new System.Drawing.Size(569, 12);
             this.label1.TabIndex = 16;
-            this.label1.Text = "각 테이블의 (              ) 위치 값과 PID와 일치 할 때 (PLine ; Modified VLine)이 생성됩니다.\n Modif" +
-    "ied VLine의 첫번째 요소 값은 원래 VLine의 (1,4)위치의 값이며 이것을 V테이블의 담보코드로 사용합니다. \n 다만, 납입주기 식별자가 6일경우 (0,5) 위치를 적용합니다." +
-    "이 경우 담보코드는 앞에 6이 추가되어 5자리가 됩니다.";
+            this.label1.Text = "P테이블과 각 테이블의 (              ) 위치 값이 일치할때 (P테이블 line + ; + V테이블 line)을 생성합니다.";
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(104, 261);
+            this.textBox1.Location = new System.Drawing.Point(165, 266);
             this.textBox1.Name = "textBox1";
             this.textBox1.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.textBox1.Size = new System.Drawing.Size(49, 21);
             this.textBox1.TabIndex = 17;
-            this.textBox1.Text = "1,12";
+            this.textBox1.Text = "0,12";
             // 
             // SamsungTextModifierForm
             // 
@@ -213,7 +201,6 @@
             this.ClientSize = new System.Drawing.Size(756, 347);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.labelHelp);
             this.Controls.Add(this.labelProgress);
             this.Controls.Add(this.buttonConvert);
             this.Controls.Add(this.buttonOpenEPath);
@@ -254,7 +241,6 @@
         private System.Windows.Forms.Button buttonConvert;
         private System.Windows.Forms.Label labelProgress;
         private System.Windows.Forms.Timer timer1;
-        private System.Windows.Forms.Label labelHelp;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox textBox1;
     }

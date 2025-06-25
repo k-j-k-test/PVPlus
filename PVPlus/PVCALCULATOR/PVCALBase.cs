@@ -323,8 +323,8 @@ namespace PVPlus.PVCALCULATOR
             bool r7Exist = riderRule.r7Expr.ToString() != "0";
             bool r8Exist = riderRule.r8Expr.ToString() != "0";
             bool r9Exist = riderRule.r9Expr.ToString() != "0";
-
             bool r10Exist = riderRule.r10Expr.ToString() != "0";
+
             bool k1Exist = riderRule.k1Expr.ToString() != "0";
             bool k2Exist = riderRule.k2Expr.ToString() != "0";
             bool k3Exist = riderRule.k3Expr.ToString() != "0";
@@ -411,7 +411,7 @@ namespace PVPlus.PVCALCULATOR
             c.Rate_할인율 = Enumerable.Range(0, MAXSIZE).Select(x => 1 / (1 + c.Rate_이율[x])).ToArray();
             c.Rate_할인율누계 = Enumerable.Range(0, MAXSIZE).Select(x => c.Pow(c.Rate_할인율, x)).ToArray();
 
-            c.Lx_납입자 = c.GetLx(c.Rate_납입자);
+            c.Lx_납입자 = ((int)variables["S8"] == 0) ? c.GetLx(c.Rate_납입자) : c.GetLx(c.Rate_유지자);
             c.Lx_유지자 = c.GetLx(c.Rate_유지자);
             c.LxSegments_유지자 = c.RateSegments_유지자.Select(x => c.GetLx(x)).ToList();
             c.Lx_납입면제자 = Enumerable.Range(0, MAXSIZE).Select(i => c.Lx_유지자[i] - c.Lx_납입자[i]).ToArray();

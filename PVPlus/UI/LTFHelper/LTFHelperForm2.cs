@@ -71,6 +71,9 @@ namespace PVPlus.UI
 
         public LTFHelperGroupOpt MultOptForm;
 
+        public LTFHelperCountOpt CntOptForm;
+
+
 
         private void LTFHelperForm2_Load(object sender, EventArgs e)
         {
@@ -119,6 +122,7 @@ namespace PVPlus.UI
             SelectOptForm = new LTFHelperSelectOpt();
             DistinctOptForm = new LTFHelperDistinctOptForm();
             MultOptForm = new LTFHelperGroupOpt();
+            CntOptForm = new LTFHelperCountOpt();
 
             dataGridView1.Columns.Add("col1", "Path");
             dataGridView1.Columns.Add("col2", "GroupBy");
@@ -824,6 +828,28 @@ namespace PVPlus.UI
                     });
                 }
 
+                if (comboBox1.SelectedItem.ToString() == "Count")
+                {
+                    IDynamicExpression expr = Compile(CntOptForm.GetExpression());
+
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            this.Invoke(new Action(() => timer1.Enabled = true));
+                            LTFHelper.Counter(x => GetValue(expr, x).ToString());
+                            this.Invoke(new Action(() => timer1.Enabled = false));
+                            this.Invoke(new Action(() => textBoxProgress.Text = "Count 완료"));
+                        }
+                        catch (Exception ex)
+                        {
+                            this.Invoke(new Action(() => timer1.Enabled = false));
+                            this.Invoke(new Action(() => textBoxProgress.Text = ex.Message));
+                        }
+
+                    });
+                }
+
             }
             catch (Exception ex)
             {
@@ -940,6 +966,10 @@ namespace PVPlus.UI
             else if (comboBox1.SelectedItem.ToString() == "Group")
             {
                 ChangeForm(groupBox1, MultOptForm);
+            }
+            else if (comboBox1.SelectedItem.ToString() == "Count")
+            {
+                ChangeForm(groupBox1, CntOptForm);
             }
         }
 

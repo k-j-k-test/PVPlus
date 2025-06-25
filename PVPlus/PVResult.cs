@@ -485,6 +485,12 @@ namespace PVPlus
             if (riderRule.k2Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "k2", riderRule.k2Expr.ToString() });
             if (riderRule.k3Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "k3", riderRule.k3Expr.ToString() });
             if (riderRule.k4Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "k4", riderRule.k4Expr.ToString() });
+            if (riderRule.k5Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "k5", riderRule.k5Expr.ToString() });
+            if (riderRule.k6Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "k6", riderRule.k6Expr.ToString() });
+            if (riderRule.k7Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "k7", riderRule.k7Expr.ToString() });
+            if (riderRule.k8Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "k8", riderRule.k8Expr.ToString() });
+            if (riderRule.k9Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "k9", riderRule.k9Expr.ToString() });
+            if (riderRule.k10Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "k10", riderRule.k10Expr.ToString() });
 
             if (riderRule.r1Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "r1", riderRule.r1Expr.ToString() });
             if (riderRule.r2Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "r2", riderRule.r2Expr.ToString() });
@@ -492,6 +498,10 @@ namespace PVPlus
             if (riderRule.r4Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "r4", riderRule.r4Expr.ToString() });
             if (riderRule.r5Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "r5", riderRule.r5Expr.ToString() });
             if (riderRule.r6Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "r6", riderRule.r6Expr.ToString() });
+            if (riderRule.r7Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "r7", riderRule.r7Expr.ToString() });
+            if (riderRule.r8Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "r8", riderRule.r8Expr.ToString() });
+            if (riderRule.r9Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "r9", riderRule.r9Expr.ToString() });
+            if (riderRule.r10Expr.ToString() != "0") 담보RuleRange.Items.Add(new string[] { "r10", riderRule.r10Expr.ToString() });
 
             담보RuleRange.Items.Add(new string[] { "S1", variables["S1"].ToString() });
             담보RuleRange.Items.Add(new string[] { "S2", variables["S2"].ToString() });
@@ -657,7 +667,7 @@ namespace PVPlus
             if (cal.riderRule.k2Expr.ToString() != "0") 기수표Set.Add("k2", sequence.Select(x => c.Rate_k2[x].ToString()).ToArray());
             if (cal.riderRule.k3Expr.ToString() != "0") 기수표Set.Add("k3", sequence.Select(x => c.Rate_k3[x].ToString()).ToArray());
             if (cal.riderRule.k4Expr.ToString() != "0") 기수표Set.Add("k4", sequence.Select(x => c.Rate_k4[x].ToString()).ToArray());
-            if (cal.riderRule.k4Expr.ToString() != "0") 기수표Set.Add("k5", sequence.Select(x => c.Rate_k5[x].ToString()).ToArray());
+            if (cal.riderRule.k5Expr.ToString() != "0") 기수표Set.Add("k5", sequence.Select(x => c.Rate_k5[x].ToString()).ToArray());
             if (cal.riderRule.k6Expr.ToString() != "0") 기수표Set.Add("k6", sequence.Select(x => c.Rate_k6[x].ToString()).ToArray());
             if (cal.riderRule.k7Expr.ToString() != "0") 기수표Set.Add("k7", sequence.Select(x => c.Rate_k7[x].ToString()).ToArray());
             if (cal.riderRule.k8Expr.ToString() != "0") 기수표Set.Add("k8", sequence.Select(x => c.Rate_k8[x].ToString()).ToArray());

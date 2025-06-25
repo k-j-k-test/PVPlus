@@ -117,7 +117,7 @@
     <Compile Include="PVCALCULATOR\PVType97.cs" />
     <Compile Include="PVCALCULATOR\PVType98.cs" />
     <Compile Include="PVCALCULATOR\PVType999.cs" />
-    <Compile Include="PVCALCULATOR\PVType111.cs" />
+    <Compile Include="PVCALCULATOR\PVType11x.cs" />
     <Compile Include="RULES\ChkExprs.cs" />
     <Compile Include="RULES\CommutationTable.cs" />
     <Compile Include="RULES\CompanyRule.cs" />
@@ -134,6 +134,12 @@
     <Compile Include="RULES\SInfo.cs" />
     <Compile Include="RULES\VarChg.cs" />
     <Compile Include="UI\LTFHelper\LTFHelper.cs" />
+    <Compile Include="UI\LTFHelper\LTFHelperCountOpt.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\LTFHelper\LTFHelperCountOpt.Designer.cs">
+      <DependentUpon>LTFHelperCountOpt.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\LTFHelper\LTFHelperDistinctOptForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -233,6 +239,9 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\LTFHelper\LTFHelperCountOpt.resx">
+      <DependentUpon>LTFHelperCountOpt.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\LTFHelper\LTFHelperDistinctOptForm.resx">
       <DependentUpon>LTFHelperDistinctOptForm.cs</DependentUpon>

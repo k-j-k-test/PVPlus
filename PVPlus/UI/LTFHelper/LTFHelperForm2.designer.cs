@@ -160,7 +160,8 @@ namespace PVPlus.UI
             "Filter",
             "Sort",
             "Select",
-            "Distinct"});
+            "Distinct",
+            "Count"});
             this.comboBox1.Location = new System.Drawing.Point(61, 14);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(72, 20);
