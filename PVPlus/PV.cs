@@ -223,43 +223,32 @@ namespace PVPlus
 
         public void EvaluateSInfo()
         {
-            string productCode = Configure.ProductCode;
-            TableType tableType = Configure.TableType;
-
             try
             {
                 SetData();
-                finder.minSByMinSKey.Clear();
-
-                List<SInfo> sList = DataReader.SInfos.ToList();
-                var sDict = sList.OrderBy(x => x.VarAdd.Contains("S5->2")).GroupBy(x => x.SKey);
+                reader.ReadSInfos();
+                List<SInfo> sList = DataReader.SInfos;
 
                 int cnt = 0;
                 int total = sList.Count();
 
-                foreach (var sl in sDict)
+                foreach (var sInfo in sList.OrderBy(x => x.S5))
                 {
-                    foreach (SInfo s in sl)
+                    try
                     {
-                        try
-                        {
-                            reader.InitializeAllVariables();
-                            LineInfo lineInfo = new LineInfo(s);
-                            lineInfo.CalculateSInfo();
-                        }
-                        catch (Exception ex)
-                        {
-                            s.ErrorMessage = ex.Message.Replace("\r", "").Replace("\n", " ");
-                        }
-                        finally
-                        {
-                            cnt++;
-                            ProgressMsg = $"\r진행도:{cnt}/{total}";
-                        }
+                        reader.InitializeAllVariables();
+                        LineInfo lineInfo = new LineInfo(sInfo);
+                        lineInfo.CalculateSInfo();
                     }
-
-                    finder.minSByMinSKey[sl.Key] = sl.Min(x => x.S);
-                    sl.ToList().ForEach(x => x.Min_S = finder.minSByMinSKey[sl.Key]);
+                    catch (Exception ex)
+                    {
+                        sInfo.ErrorMessage = ex.Message.Replace("\r", "").Replace("\n", " ");
+                    }
+                    finally
+                    {
+                        cnt++;
+                        ProgressMsg = $"\r진행도:{cnt}/{total}";
+                    }
                 }
 
                 reader.GenerateEvaluatedSInfosText(sList);
@@ -310,13 +299,10 @@ namespace PVPlus
 
         public void CheckExcess()
         {
-            string productCode = Configure.ProductCode;
-            TableType tableType = Configure.TableType;
-
             try
             {
                 SetData();
-                List<SInfo> sList = DataReader.EvaluatedSInfos;
+                List<SInfo> sList = DataReader.SInfos;
 
                 FileInfo ExcessFI = new FileInfo(Path.Combine(Configure.WorkingDI.FullName, "AlphaExcessCheck.txt"));
                 StreamWriter swAlphaExcessCheck = new StreamWriter(ExcessFI.FullName, false, Encoding.UTF8);

@@ -49,7 +49,7 @@ namespace PVPlus.PVCALCULATOR
 
             ex = FindExpense();
             가입금액 = (double)variables["Amount"];
-            Min_S = PV.finder.FindMin_S(riderRule.SKeyExpr.Evaluate());
+            Min_S = PV.finder.FindMin_S(riderRule.MinSKey);
 
             //납입기간이 m일 때와 Min(20,n)일때 기수표가 달라지는 경우(납기별 해지율 및 기납입보험료 환급 등)
             if ((int)variables["S3"] > 0)

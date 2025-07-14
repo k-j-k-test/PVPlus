@@ -10,7 +10,7 @@ namespace PVPlus.PVCALCULATOR
 {
     public class PVType13 : PVType11
     {
-        //betaPrime_S - 10년이내: β'_S, 10년이후: 가변1 
+        //betaPrime_S - 10년이내: β'_S, 10년이후: F6 
         public PVType13(LineInfo line) : base(line)
         {
 

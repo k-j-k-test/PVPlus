@@ -66,23 +66,6 @@ namespace PVPlus
             }
         }
 
-        public static double LD(params double[] items)
-        {
-            int t = (int)variables["t"];
-            int n = (int)variables["n"];
-
-            if (n - t > items.Length)
-            {
-                return 1.0;
-            }
-            else if (n - t > 0)
-            {
-                return items[n - t - 1];
-            }
-            else
-                return 1.0;
-        }
-
         public static double U(params double[] items)
         {
             int t = (int)variables["t"];
@@ -356,6 +339,10 @@ namespace PVPlus
             return GP;
         }
 
+        public static double GP()
+        {
+            return GP(1);
+        }
 
         #region Round, Min/Max
 

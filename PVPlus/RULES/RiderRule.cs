@@ -51,7 +51,7 @@ namespace PVPlus.RULES
         public IGenericExpression<double> k10Expr { get; set; }
 
         public IGenericExpression<int> S_Type { get; set; }
-        public IGenericExpression<string> SKeyExpr { get; set; }
+        public string MinSKey { get; set; }
     }
 
 }

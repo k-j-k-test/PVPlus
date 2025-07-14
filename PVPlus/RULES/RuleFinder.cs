@@ -39,9 +39,9 @@ namespace PVPlus.RULES
 
                 exExprsByExpenseKey = DataReader.ExpenseRules.ToLookup(x => x.상품코드 + "|" + x.담보코드);
 
-                rateRulesByRateKey = DataReader.RateRules.ToLookup(x => x.위험률Key);
+                rateRulesByRateKey = DataReader.RateRules.ToLookup(x => x.위험률명);
 
-                minSByMinSKey = DataReader.EvaluatedSInfos.GroupBy(x => x.SKey).ToDictionary(x => x.Key, x => x.First().Min_S);
+                sInfosByMinSKey = DataReader.SInfos.ToLookup(x => x.MinSKey);
 
                 chkExprsByCheckItem = DataReader.ChkExprs.ToLookup(x => x.산출항목);
             }
@@ -182,82 +182,55 @@ namespace PVPlus.RULES
 
                     foreach (ExpenseRule exExpr in exExprs)
                     {
-                        bool 조건1 = exExpr.조건1.Evaluate();
-                        bool 조건2 = exExpr.조건2.Evaluate();
-                        bool 조건3 = exExpr.조건3.Evaluate();
-                        bool 조건4 = exExpr.조건4.Evaluate();
+                        if (!exExpr.조건1.Evaluate()) continue;
+                        if (!exExpr.조건2.Evaluate()) continue;
+                        if (!exExpr.조건3.Evaluate()) continue;
+                        if (!exExpr.조건4.Evaluate()) continue;
 
-                        if (조건1 && 조건2 && 조건3 && 조건4)
-                        {
-                            return ToExpense(exExpr);
-                        }
+                        return ToExpense(exExpr);
                     }
                 }
             }
 
             throw new Exception($"조건과 일치하는 사업비를 찾을 수 없습니다. 담보코드: {riderRule.담보코드}");
         }
-        public RateRule FindRateRule(string rateKey, VariableCollection variables)
+        public RateRule FindRateRule(string rateName, VariableCollection variables)
         {
-            if (rateRulesByRateKey.Contains(rateKey))
+            if (rateRulesByRateKey.Contains(rateName))
             {
-                List<RateRule> rateList = rateRulesByRateKey[rateKey].ToList();
-                char[] rateShape = rateList.First().위험률형태.ToArray();
-
-                List<int> lineRateFactorList = new List<int>()
-                    {
-                        rateShape[0] == '1' ? (int)variables["F1"] : 0,
-                        rateShape[1] == '1' ? (int)variables["F2"] : 0,
-                        rateShape[2] == '1' ? (int)variables["F3"] : 0,
-                        rateShape[3] == '1' ? (int)variables["F4"] : 0,
-                        rateShape[4] == '1' ? (int)variables["F5"] : 0,
-                        rateShape[5] == '1' ? (int)variables["F6"] : 0,
-                        rateShape[6] == '1' ? (int)variables["F7"] : 0,
-                        rateShape[7] == '1' ? (int)variables["F8"] : 0,
-                        rateShape[8] == '1' ? (int)variables["F9"] : 0,
-
-                    };
-                string lineRateFactor = string.Join("|", lineRateFactorList);
-
-                foreach (RateRule rate in rateList)
+                foreach(RateRule rateRule in rateRulesByRateKey[rateName])
                 {
-                    List<int> compareRateFactorList = new List<int>()
-                    {
-                        rate.성별,
-                        rate.급수,
-                        rate.운전,
-                        rate.금액,
-                        rate.사고연령,
-                        rate.가변1,
-                        rate.가변2,
-                        rate.가변3,
-                        rate.가변4
-                    };
-                    string compareRateFactor = string.Join("|", compareRateFactorList);
+                    if (rateRule.F1 != null && (int)variables["F1"] != rateRule.F1) continue;
+                    if (rateRule.F2 != null && (int)variables["F2"] != rateRule.F2) continue;
+                    if (rateRule.F3 != null && (int)variables["F3"] != rateRule.F3) continue;
+                    if (rateRule.F4 != null && (int)variables["F4"] != rateRule.F4) continue;
+                    if (rateRule.F5 != null && (int)variables["F5"] != rateRule.F5) continue;
+                    if (rateRule.F6 != null && (int)variables["F6"] != rateRule.F6) continue;
+                    if (rateRule.F7 != null && (int)variables["F7"] != rateRule.F7) continue;
+                    if (rateRule.F8 != null && (int)variables["F8"] != rateRule.F8) continue;
+                    if (rateRule.F9 != null && (int)variables["F9"] != rateRule.F9) continue;
 
-                    if (lineRateFactor == compareRateFactor)
-                    {
-                        return rate;
-                    }
-                    else
-                    {
-                        continue;
-                    }
+                    return rateRule;
                 }
             }
 
-            throw new Exception($"위험률Key를 찾을 수 없습니다 : {rateKey} \r\n위험률Factors F1~F10 : {string.Join(" ", Enumerable.Range(1, 10).Select(i => variables["F" + i]))}");
+            throw new Exception($"위험률Key를 찾을 수 없습니다 : {rateName} \r\n위험률Factors F1~F10 : {string.Join(" ", Enumerable.Range(1, 10).Select(i => variables["F" + i]))}");
         }
-        public double FindMin_S(string SKey)
+        public double FindMin_S(string MinSKey)
         {
-            if (minSByMinSKey.ContainsKey(SKey))
+            List<SInfo> sInfos = new List<SInfo>();
+
+            if (sInfosByMinSKey.Contains(MinSKey))
             {
-                return minSByMinSKey[SKey];
+                sInfos = sInfosByMinSKey[MinSKey]
+                   .Where(x => x.조건1.Evaluate() && x.조건2.Evaluate() && x.조건3.Evaluate())
+                   .ToList();
+
+                if (sInfos.Any()) return sInfos.Min(x => x.S);
             }
-            else
-            {
-                return 0;
-            }
+
+            return 0;
+ 
         }
         public ChkExprs FindChkExprs(string checkItem)
         {
@@ -287,8 +260,8 @@ namespace PVPlus.RULES
         public ILookup<string, RiderRule> riderRuleByRiderCode;
         public ILookup<string, ExpenseRule> exExprsByExpenseKey;
         public ILookup<string, RateRule> rateRulesByRateKey;
-        public Dictionary<string, double> minSByMinSKey;
         public ILookup<string, ChkExprs> chkExprsByCheckItem;
+        public ILookup<string, SInfo> sInfosByMinSKey;
 
         private Expense ToExpense(ExpenseRule exExpr)
         {

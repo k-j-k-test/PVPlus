@@ -104,69 +104,43 @@ namespace PVPlus.RULES
             if (AdjustedLine != null)
             {
                 SetLayoutVariables();
-
-                if ((int)variables["nAge"] > 0) variables["n"] = (int)variables["nAge"] - (int)variables["Age"];
-                if ((int)variables["mAge"] > 0) variables["m"] = (int)variables["mAge"] - (int)variables["Age"];
-
                 ChangeVariables();
             }
             if (sInfo != null)
             {
-                variables["Age"] = sInfo.x;
+                variables["Jong"] = sInfo.Jong;
+                variables["Age"] = sInfo.Age;
+                variables["Freq"] = sInfo.Freq;
+
                 variables["n"] = sInfo.n;
                 variables["m"] = sInfo.m;
 
-                variables["F1"] = sInfo.성별;
-                variables["F2"] = sInfo.급수;
-                variables["F3"] = sInfo.운전;
-                variables["F4"] = sInfo.금액;
-                variables["F5"] = sInfo.사고연령;
-                variables["F6"] = sInfo.가변1;
-                variables["F7"] = sInfo.가변2;
-                variables["F8"] = sInfo.가변3;
-                variables["F9"] = sInfo.가변4;
+                variables["F1"] = sInfo.F1;
+                variables["F2"] = sInfo.F2;
+                variables["F3"] = sInfo.F3;
+                variables["F4"] = sInfo.F4;
+                variables["F5"] = sInfo.F5;
+                variables["F6"] = sInfo.F6;
+                variables["F7"] = sInfo.F7;
+                variables["F8"] = sInfo.F8;
+                variables["F9"] = sInfo.F9;
 
-                //AddVariables
-                if (sInfo.VarAdd != "")
-                {
-                    foreach (string kv in sInfo.VarAdd.Split(','))
-                    {
-                        try
-                        {
-                            string k = kv.Split(new string[] { "->" }, StringSplitOptions.None)[0].Trim();
-
-                            if (variables[k].GetType() == typeof(int))
-                            {
-                                variables[k] = int.Parse(kv.Split(new string[] { "->" }, StringSplitOptions.None)[1].Trim());
-                            }
-                            else if (variables[k].GetType() == typeof(double))
-                            {
-                                variables[k] = double.Parse(kv.Split(new string[] { "->" }, StringSplitOptions.None)[1].Trim());
-                            }
-                            else if (variables[k].GetType() == typeof(string))
-                            {
-                                variables[k] = kv.Split(new string[] { "->" }, StringSplitOptions.None)[1].Trim();
-                            }
-                            else
-                            {
-                                throw new Exception($"VarAdd {sInfo.VarAdd}의 형식이 잘 못 되었습니다.");
-                            }
-                        }
-                        catch
-                        {
-                            throw new Exception($"VarAdd {sInfo.VarAdd}의 형식이 잘 못 되었습니다.");
-                        }
-                    }
-                }
+                variables["S1"] = sInfo.S1;
+                variables["S2"] = sInfo.S2;
+                variables["S3"] = sInfo.S3;
+                variables["S4"] = sInfo.S4;
+                variables["S5"] = sInfo.S5;
+                variables["S6"] = sInfo.S6;
+                variables["S7"] = sInfo.S7;
+                variables["S8"] = sInfo.S8;
+                variables["S9"] = sInfo.S9;
             }
 
-            string SKey = riderRule.SKeyExpr.Evaluate();
-            double Min_S = PV.finder.FindMin_S(SKey);
+            double Min_S = PV.finder.FindMin_S(riderRule.MinSKey);
 
             variables["v"] = 1 / (1 + (double)variables["i"]);
             variables["vv"] = 1 / (1 + (double)variables["ii"]);
             variables["Amount"] = riderRule.가입금액Expr.Evaluate();
-            variables["Min_S"] = Min_S;
             variables["PV_Type"] = riderRule.PV_Type.Evaluate();
             variables["S_Type"] = riderRule.S_Type.Evaluate();
             variables["Company"] = Configure.CompanyRule.GetType().Name;

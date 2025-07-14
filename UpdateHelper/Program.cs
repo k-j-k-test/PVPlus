@@ -9,10 +9,6 @@ class Program
 {
     static void Main(string[] args)
     {
-        //string from = @"C:\Users\wjdrh\OneDrive\Desktop\Test\SummitModel\ActuLight\bin\Debug\net48\UpdateFiles";
-        //string to = @"C:\Users\wjdrh\OneDrive\Desktop\Test\SummitModel\ActuLight\bin\Debug\net48\";
-        //args = new string[] { from, to };
-
         if (args.Length != 2)
         {
             Console.WriteLine("Usage: UpdateHelper.exe <source_path> <destination_path>");

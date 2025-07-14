@@ -131,7 +131,7 @@ namespace PVPlus.PVCALCULATOR
         double[] w = new double[MAXSIZE]; //해지율
 
         double B1 = 0;
-        double B2 = 0;
+        double B2 = 0; 
         double B3 = 0;
         double DWait = 0;
 
@@ -218,7 +218,7 @@ namespace PVPlus.PVCALCULATOR
             Setq3rd();
 
             //Rate Sheet에 가변위험률 등록
-            PV.finder.FindRateRule("q3rd|000000000|2|202505", variables).RateArr = q_3rd;
+            PV.finder.FindRateRule("q3rd", variables).RateArr = q_3rd;
 
             c = base.MakeCommutationTable();
 

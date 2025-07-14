@@ -30,10 +30,18 @@ namespace PVPlus
 
             if (Directory.Exists(extractPath))
                 Directory.Delete(extractPath, true);
+
             ZipFile.ExtractToDirectory(zipPath, extractPath);
 
-            string updaterPath = Path.Combine(extractPath, "UpdateHelper.exe");
-            string arguments = $"\"{extractPath}\" \"{currentPath}\"";
+            string actualSourcePath = extractPath;
+            string pvPlusFolder = Path.Combine(extractPath, "PVPlus");
+            if (Directory.Exists(pvPlusFolder))
+            {
+                actualSourcePath = pvPlusFolder;
+            }
+
+            string updaterPath = Path.Combine(actualSourcePath, "UpdateHelper.exe");
+            string arguments = $"\"{actualSourcePath}\" \"{currentPath}\"";
             Process.Start(updaterPath, arguments);
             Environment.Exit(0);
         }

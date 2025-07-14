@@ -38,6 +38,7 @@
             this.textBoxExcelPath = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.checkBoxLineSummary = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.checkBoxSample = new System.Windows.Forms.CheckBox();
             this.comboBoxCompany = new System.Windows.Forms.ComboBox();
@@ -68,7 +69,7 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label6 = new System.Windows.Forms.Label();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
-            this.checkBoxLineSummary = new System.Windows.Forms.CheckBox();
+            this.linkLabel2 = new System.Windows.Forms.LinkLabel();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -156,6 +157,16 @@
             this.groupBox1.TabIndex = 8;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "설정";
+            // 
+            // checkBoxLineSummary
+            // 
+            this.checkBoxLineSummary.AutoSize = true;
+            this.checkBoxLineSummary.Location = new System.Drawing.Point(93, 90);
+            this.checkBoxLineSummary.Name = "checkBoxLineSummary";
+            this.checkBoxLineSummary.Size = new System.Drawing.Size(76, 16);
+            this.checkBoxLineSummary.TabIndex = 13;
+            this.checkBoxLineSummary.Text = "라인 요약";
+            this.checkBoxLineSummary.UseVisualStyleBackColor = true;
             // 
             // label5
             // 
@@ -459,19 +470,22 @@
             this.linkLabel1.AutoSize = true;
             this.linkLabel1.Location = new System.Drawing.Point(6, 9);
             this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(0, 12);
+            this.linkLabel1.Size = new System.Drawing.Size(77, 12);
             this.linkLabel1.TabIndex = 28;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "업데이트링크";
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
-            // checkBoxLineSummary
+            // linkLabel2
             // 
-            this.checkBoxLineSummary.AutoSize = true;
-            this.checkBoxLineSummary.Location = new System.Drawing.Point(93, 90);
-            this.checkBoxLineSummary.Name = "checkBoxLineSummary";
-            this.checkBoxLineSummary.Size = new System.Drawing.Size(76, 16);
-            this.checkBoxLineSummary.TabIndex = 13;
-            this.checkBoxLineSummary.Text = "라인 요약";
-            this.checkBoxLineSummary.UseVisualStyleBackColor = true;
+            this.linkLabel2.AutoSize = true;
+            this.linkLabel2.Location = new System.Drawing.Point(89, 9);
+            this.linkLabel2.Name = "linkLabel2";
+            this.linkLabel2.Size = new System.Drawing.Size(77, 12);
+            this.linkLabel2.TabIndex = 29;
+            this.linkLabel2.TabStop = true;
+            this.linkLabel2.Text = "패치내역보기";
+            this.linkLabel2.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel2_LinkClicked);
             // 
             // MainPVForm
             // 
@@ -479,6 +493,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(794, 501);
+            this.Controls.Add(this.linkLabel2);
             this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.groupBox3);
@@ -563,5 +578,6 @@
         private System.Windows.Forms.LinkLabel linkLabel1;
         private System.Windows.Forms.CheckBox checkBoxSample;
         private System.Windows.Forms.CheckBox checkBoxLineSummary;
+        private System.Windows.Forms.LinkLabel linkLabel2;
     }
 }

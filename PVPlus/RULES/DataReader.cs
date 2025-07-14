@@ -24,7 +24,6 @@ namespace PVPlus.RULES
         public static List<Layout> Layouts = new List<Layout>();
         public static List<VarChg> VarChgs = new List<VarChg>();
         public static List<ChkExprs> ChkExprs = new List<ChkExprs>();
-        public static List<SInfo> EvaluatedSInfos = new List<SInfo>();
         public static List<RiderRule> RiderRules = new List<RiderRule>();
         public static List<ExpenseRule> ExpenseRules = new List<ExpenseRule>();
         public static List<SInfo> SInfos = new List<SInfo>();
@@ -38,7 +37,6 @@ namespace PVPlus.RULES
             ReadRateRules();
             ReadLayouts();
             ReadVariableChanger();
-            ReadSInfos();
             ReadEvaluatedSInfos();
             ReadChkExprs();
         }
@@ -77,7 +75,7 @@ namespace PVPlus.RULES
             rule.유지자Expr = CompileDouble("1-q1");
             rule.급부Exprs = new List<IGenericExpression<double>>() { CompileDouble("q1") };
             rule.탈퇴Exprs = new List<IGenericExpression<double>>() { CompileDouble("1-q1") };
-            rule.RateKeyByRateVariable = new Dictionary<string, string>() { { "q1", "정기사망|100000000|1|000000" } };
+            rule.RateKeyByRateVariable = new Dictionary<string, string>() { { "q1", "정기사망" } };
             RiderRules.Add(rule);
         }
         private void ReadExpenses()
@@ -142,13 +140,7 @@ namespace PVPlus.RULES
                 .Where(x => x[0] == Configure.ProductCode || x[0] == "Base")
                 .Select(x => ToVariableChanger(x))
                 .ToList();
-        }
-        private void ReadSInfos()
-        {
-            string path = Path.Combine(Configure.WorkingDI.FullName, "Sinfo.txt");
-
-            SInfos = ToArrList(path).Where(x => x[1] == Configure.ProductCode).Select(y => ToSInfo(y)).ToList();
-        }
+        } 
         private void ReadEvaluatedSInfos()
         {
             string path = Path.Combine(Configure.WorkingDI.FullName, "EvaluatedSInfo.txt");
@@ -160,11 +152,11 @@ namespace PVPlus.RULES
                     .Select(x => ToEvaluatedSInfo(x))
                     .ToList();
 
-                EvaluatedSInfos = evaluatedSInfo;
+                SInfos = evaluatedSInfo;
             }
             else
             {
-                EvaluatedSInfos = new List<SInfo>();
+                SInfos = new List<SInfo>();
             }
         }
         private void ReadChkExprs()
@@ -176,6 +168,12 @@ namespace PVPlus.RULES
                 .ToList();
 
             ChkExprs = chkExprs;
+        }
+        public void ReadSInfos()
+        {
+            string path = Path.Combine(Configure.WorkingDI.FullName, "Sinfo.txt");
+
+            SInfos = ToArrList(path).Where(x => x[1] == Configure.ProductCode).Select(y => ToSInfo(y)).ToList();
         }
 
         public void InitializeAllVariables()
@@ -439,8 +437,17 @@ namespace PVPlus.RULES
         {
             return int.TryParse(s, out int val) ? val : defaultVal;
         }
+        public Nullable<int> ToNullableInt(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s))
+            {
+                return null;
+            }
 
-        private List<string[]> ToArrList(string path)
+            return ToIntOrDefault(s, 0);
+        }
+
+        public List<string[]> ToArrList(string path)
         {
             List<string[]> result = new List<string[]>();
 
@@ -558,7 +565,7 @@ namespace PVPlus.RULES
             r.k10Expr = CompileDouble(arr[99]);
 
             r.S_Type = CompileInt(arr[100]);
-            r.SKeyExpr = CompileString(arr[101]);
+            r.MinSKey = arr[101];
 
             return r;
         }
@@ -566,27 +573,25 @@ namespace PVPlus.RULES
         {
             RateRule r = new RateRule();
 
-            r.위험률Key = arr[0];
-            r.위험률형태 = arr[1];
-            r.위험률명 = arr[2];
-            r.적용년월 = arr[3];
+            r.위험률명 = arr[0];
+            r.적용년월 = arr[1];
 
-            r.기간 = ToIntOrDefault(arr[4], 0);
-            r.성별 = ToIntOrDefault(arr[5], 0);
-            r.급수 = ToIntOrDefault(arr[6], 0);
-            r.운전 = ToIntOrDefault(arr[7], 0);
-            r.금액 = ToIntOrDefault(arr[8], 0);
-            r.사고연령 = ToIntOrDefault(arr[9], 0);
-            r.가변1 = ToIntOrDefault(arr[10], 0);
-            r.가변2 = ToIntOrDefault(arr[11], 0);
-            r.가변3 = ToIntOrDefault(arr[12], 0);
-            r.가변4 = ToIntOrDefault(arr[13], 0);
+            r.기간 = ToIntOrDefault(arr[2], 0);
+            r.F1 = ToNullableInt(arr[3]);
+            r.F2 = ToNullableInt(arr[4]);
+            r.F3 = ToNullableInt(arr[5]);
+            r.F4 = ToNullableInt(arr[6]);
+            r.F5 = ToNullableInt(arr[7]);
+            r.F6 = ToNullableInt(arr[8]);
+            r.F7 = ToNullableInt(arr[9]);
+            r.F8 = ToNullableInt(arr[10]);
+            r.F9 = ToNullableInt(arr[11]);
 
             r.RateArr = new double[131];
 
             for (int i = 0; i <= 130; i++)
             {
-                r.RateArr[i] = ToDoubleOrDefault(arr[14 + i], 0);
+                r.RateArr[i] = ToDoubleOrDefault(arr[12 + i], 0);
             }
 
             return r;
@@ -658,67 +663,76 @@ namespace PVPlus.RULES
         private SInfo ToSInfo(string[] arr)
         {
             SInfo s = new SInfo();
-
-            s.SKey = arr[0].Replace(@"""", "");
+            s.MinSKey = arr[0];
             s.상품코드 = arr[1];
             s.담보코드 = arr[2];
-            s.GroupKey1 = ToIntOrDefault(arr[3], 0);
-            s.GroupKey2 = ToIntOrDefault(arr[4], 0);
-            s.GroupKey3 = ToIntOrDefault(arr[5], 0);
-
-            s.x = ToIntOrDefault(arr[6], 40);
-            s.n = ToIntOrDefault(arr[7], 3);
-            s.m = ToIntOrDefault(arr[8], 3);
-            s.성별 = ToIntOrDefault(arr[9], 1);
-            s.급수 = ToIntOrDefault(arr[10], 1);
-            s.운전 = ToIntOrDefault(arr[11], 1);
-            s.금액 = ToIntOrDefault(arr[12], 1);
-            s.사고연령 = ToIntOrDefault(arr[13], s.x);
-            s.가변1 = ToIntOrDefault(arr[14], 1);
-            s.가변2 = ToIntOrDefault(arr[15], 1);
-            s.가변3 = ToIntOrDefault(arr[16], 1);
-            s.가변4 = ToIntOrDefault(arr[17], 1);
-
-            s.VarAdd = arr[18];
-            s.위험보험료Expr = CompileDouble(arr[19]);
-            s.정기위험보험료Expr = CompileDouble(arr[20]);
-            s.SExpr = CompileDouble(arr[21]);
-            s.Min_S = ToDoubleOrDefault(arr[22], 0);
-            s.ErrorMessage = arr[23];
-
+            s.조건1 = CompileBool(arr[3]);
+            s.조건2 = CompileBool(arr[4]);
+            s.조건3 = CompileBool(arr[5]);
+            s.Jong = ToIntOrDefault(arr[6], 0);
+            s.Freq = ToIntOrDefault(arr[7], 1);
+            s.Age = ToIntOrDefault(arr[8], 40);
+            s.n = ToIntOrDefault(arr[9], 3);
+            s.m = ToIntOrDefault(arr[10], 3);
+            s.F1 = ToIntOrDefault(arr[11], 1);
+            s.F2 = ToIntOrDefault(arr[12], 1);
+            s.F3 = ToIntOrDefault(arr[13], 1);
+            s.F4 = ToIntOrDefault(arr[14], 0);
+            s.F5 = ToIntOrDefault(arr[15], 0);
+            s.F6 = ToIntOrDefault(arr[16], 0);
+            s.F7 = ToIntOrDefault(arr[17], 0);
+            s.F8 = ToIntOrDefault(arr[18], 0);
+            s.F9 = ToIntOrDefault(arr[19], 0);
+            s.S1 = ToIntOrDefault(arr[20], 0);
+            s.S2 = ToIntOrDefault(arr[21], 0);
+            s.S3 = ToIntOrDefault(arr[22], 0);
+            s.S4 = ToIntOrDefault(arr[23], 0);
+            s.S5 = ToIntOrDefault(arr[24], 0);
+            s.S6 = ToIntOrDefault(arr[25], 0);
+            s.S7 = ToIntOrDefault(arr[26], 0);
+            s.S8 = ToIntOrDefault(arr[27], 0);
+            s.S9 = ToIntOrDefault(arr[28], 0);
+            s.위험보험료Expr = CompileDouble(arr[29]);
+            s.정기위험보험료Expr = CompileDouble(arr[30]);
+            s.SExpr = CompileDouble(arr[31]);
             return s;
         }
         private SInfo ToEvaluatedSInfo(string[] arr)
         {
             SInfo s = new SInfo();
-
-            s.SKey = arr[0].Replace(@"""", "");
+            s.MinSKey = arr[0];
             s.상품코드 = arr[1];
             s.담보코드 = arr[2];
-            s.GroupKey1 = ToIntOrDefault(arr[3], 0);
-            s.GroupKey2 = ToIntOrDefault(arr[4], 0);
-            s.GroupKey3 = ToIntOrDefault(arr[5], 0);
-
-            s.x = ToIntOrDefault(arr[6], 40);
-            s.n = ToIntOrDefault(arr[7], 3);
-            s.m = ToIntOrDefault(arr[8], 3);
-            s.성별 = ToIntOrDefault(arr[9], 1);
-            s.급수 = ToIntOrDefault(arr[10], 1);
-            s.운전 = ToIntOrDefault(arr[11], 1);
-            s.금액 = ToIntOrDefault(arr[12], 1);
-            s.사고연령 = ToIntOrDefault(arr[13], s.x);
-            s.가변1 = ToIntOrDefault(arr[14], 1);
-            s.가변2 = ToIntOrDefault(arr[15], 1);
-            s.가변3 = ToIntOrDefault(arr[16], 1);
-            s.가변4 = ToIntOrDefault(arr[17], 1);
-
-            s.VarAdd = arr[18];
-            s.위험보험료 = ToDoubleOrDefault(arr[19], 0);
-            s.정기위험보험료 = ToDoubleOrDefault(arr[20], 0);
-            s.S = ToDoubleOrDefault(arr[21], 0);
-            s.Min_S = ToDoubleOrDefault(arr[22], 0);
-            s.ErrorMessage = arr[23];
-
+            s.조건1 = CompileBool(arr[3]);
+            s.조건2 = CompileBool(arr[4]);
+            s.조건3 = CompileBool(arr[5]);
+            s.Jong = ToIntOrDefault(arr[6], 0);
+            s.Freq = ToIntOrDefault(arr[7], 1);
+            s.Age = ToIntOrDefault(arr[8], 40);
+            s.n = ToIntOrDefault(arr[9], 3);
+            s.m = ToIntOrDefault(arr[10], 3);
+            s.F1 = ToIntOrDefault(arr[11], 1);
+            s.F2 = ToIntOrDefault(arr[12], 1);
+            s.F3 = ToIntOrDefault(arr[13], 1);
+            s.F4 = ToIntOrDefault(arr[14], 0);
+            s.F5 = ToIntOrDefault(arr[15], 0);
+            s.F6 = ToIntOrDefault(arr[16], 0);
+            s.F7 = ToIntOrDefault(arr[17], 0);
+            s.F8 = ToIntOrDefault(arr[18], 0);
+            s.F9 = ToIntOrDefault(arr[19], 0);
+            s.S1 = ToIntOrDefault(arr[20], 0);
+            s.S2 = ToIntOrDefault(arr[21], 0);
+            s.S3 = ToIntOrDefault(arr[22], 0);
+            s.S4 = ToIntOrDefault(arr[23], 0);
+            s.S5 = ToIntOrDefault(arr[24], 0);
+            s.S6 = ToIntOrDefault(arr[25], 0);
+            s.S7 = ToIntOrDefault(arr[26], 0);
+            s.S8 = ToIntOrDefault(arr[27], 0);
+            s.S9 = ToIntOrDefault(arr[28], 0);
+            s.위험보험료 = ToDoubleOrDefault(arr[29], 0);
+            s.정기위험보험료 = ToDoubleOrDefault(arr[30], 0);
+            s.S = ToDoubleOrDefault(arr[31], 0);
+            s.ErrorMessage = arr[32];
             return s;
         }
         private ChkExprs ToChkExprs(string[] arr)

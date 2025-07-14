@@ -526,6 +526,9 @@ namespace PVPlus
             {             
                 LoadVersionInfo();
 
+                linkLabel1.Text = "";
+                linkLabel2.Text = "";
+
                 mainForm.SetVersionText($"PVPLUS {CurrentVersion}");
 
                 (LastestVersion, DownloadUrl) = await VersionChecker.GetLatestVersionInfo();
@@ -535,6 +538,7 @@ namespace PVPlus
                     if (VersionChecker.IsUpdateAvailable(CurrentVersion, LastestVersion))
                     {
                         linkLabel1.Text = $"{LastestVersion} 패치";
+                        linkLabel2.Text = $"업데이트 내역 보기";
                     }
                 }
             }
@@ -550,6 +554,7 @@ namespace PVPlus
 
             if (dialogResult == DialogResult.Yes)
             {
+
                 DirectoryInfo rootPath = new DirectoryInfo(Application.StartupPath).Parent.CreateSubdirectory("PatchFiles");
                 string AppName = Assembly.GetExecutingAssembly().GetName().Name;
 
@@ -569,8 +574,17 @@ namespace PVPlus
             Patch();
         }
 
+        private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = @"https://github.com/k-j-k-test/PVPlus/releases",
+                UseShellExecute = true
+            });
+        }
 
         #endregion
+
 
     }
 

@@ -10,7 +10,7 @@ namespace PVPlus.PVCALCULATOR
 {
     public class PVType92 : PVCalculator
     {
-        //현대 퍼펙트라이프 패키지보험 기납입보험료 환급형, 가변2: 환급률
+        //현대 퍼펙트라이프 패키지보험 기납입보험료 환급형, F7: 환급률
         public PVType92(LineInfo line) : base(line)
         {
 

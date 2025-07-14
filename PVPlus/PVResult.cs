@@ -146,7 +146,7 @@ namespace PVPlus
             items.Add(orgLineArr[1]);  //담보코드
             items.Add(orgLineArr[2]);  //납기
             items.Add(orgLineArr[3]);  //보기
-            items.Add(orgLineArr[4]);  //성별
+            items.Add(orgLineArr[4]);  //F1
             items.Add(orgLineArr[5]);  //연령
             items.Add(orgLineArr[6]);  //요율급수
             items.Add(orgLineArr[7]);  //요율키1
@@ -190,7 +190,7 @@ namespace PVPlus
             items.Add(orgLineArr[1]);  //담보코드
             items.Add(orgLineArr[2]);  //납기
             items.Add(orgLineArr[3]);  //보기
-            items.Add(orgLineArr[4]);  //성별
+            items.Add(orgLineArr[4]);  //F1
             items.Add(orgLineArr[5]);  //연령
             items.Add(orgLineArr[6]);  //요율급수
             items.Add(orgLineArr[7]);  //x
@@ -241,11 +241,8 @@ namespace PVPlus
 
         public override string GetHeadLine()
         {
-            string line = string.Join("\t", typeof(SInfo).GetProperties()
-                .Where(x => x.PropertyType == typeof(string) || x.PropertyType == typeof(double) || x.PropertyType == typeof(int))
-                .Select(x => x.Name));
-
-            line += $"\t가입금액\t월납영업보험료\t기준연납순보험료\talpha_P\talpha_Statutory\talpha_S\t예정신계약비\t표준해약공제액\talphaExcessed\tresultType";
+            string line = $"MinSKey\t상품코드\t담보코드\t조건1\t조건2\t조건3\tJong\tFreq\tAge\tn\tm\tF1\tF2\tF3\tF4\tF5\tF6\tF7\tF8\tF9\tS1\tS2\tS3\tS4\tS5\tS6\tS7\tS8\tS9\t위험보험료\t정기보험위험보험료\tS\tErrorMessage";
+            line += $"\tMin_S\t가입금액\t월납영업보험료\t기준연납순보험료\talpha_P\talpha_Statutory\talpha_S\t예정신계약비\t표준해약공제액\talphaExcessed\tresultType";
 
             return line ;
         }
@@ -256,11 +253,9 @@ namespace PVPlus
             int t = (int)variables["ElapseYear"];
             int freq = (int)variables["Freq"];
 
-            string line = string.Join("\t", typeof(SInfo).GetProperties()
-                .Where(x => x.PropertyType == typeof(string) || x.PropertyType == typeof(double) || x.PropertyType == typeof(int))
-                .Select(x => x.GetValue(sInfo, null).ToString()));
+            string line = sInfo.ToString();
 
-            line += $"\t{Dict["Amount"]}\t{Dict["GP"]}\t{Dict["STDNP"]}\t{Dict["alpha_P"]}\t{Dict["alpha_Statutory"]}\t{Dict["alpha_S"]}\t{Dict["ALPHA"]}\t{Dict["STDALPHA"]}\t{Dict["alphaExcessed"]}\t{ResultType}";
+            line += $"\t{Dict["Min_S"]}\t{Dict["Amount"]}\t{Dict["GP"]}\t{Dict["STDNP"]}\t{Dict["alpha_P"]}\t{Dict["alpha_Statutory"]}\t{Dict["alpha_S"]}\t{Dict["ALPHA"]}\t{Dict["STDALPHA"]}\t{Dict["alphaExcessed"]}\t{ResultType}";
 
             return line;
         }
@@ -271,7 +266,7 @@ namespace PVPlus
             int t = (int)variables["ElapseYear"];
             int freq = (int)variables["Freq"];
 
-            cal.Min_S = sInfo.Min_S; 
+            Dict["Min_S"] = cal.Min_S;
             Dict["Amount"] = cal.가입금액;
             Dict["GP"] = cal.Eval("GP6", n, m, t, 1);
             Dict["STDNP"] = cal.Eval("STDNP_UNIT", n, m, t, 12) * Dict["Amount"];
@@ -511,7 +506,7 @@ namespace PVPlus
             담보RuleRange.Items.Add(new string[] { "S6", variables["S6"].ToString() });
             담보RuleRange.Items.Add(new string[] { "S7", variables["S7"].ToString() });
 
-            담보RuleRange.Items.Add(new string[] { "Min_SGroupKey", riderRule.SKeyExpr.Evaluate() });
+            담보RuleRange.Items.Add(new string[] { "Min_SGroupKey", riderRule.MinSKey });
             담보RuleRange.Items.Add(new string[] { "TempStr1", variables["TempStr1"].ToString() });
             담보RuleRange.Items.Add(new string[] { "TempStr2", variables["TempStr2"].ToString() });
         }
@@ -534,15 +529,13 @@ namespace PVPlus
             계산FactorRange.Items.Add(new string[] { "연령(Age)", variables["Age"].ToString() });
             계산FactorRange.Items.Add(new string[] { "보험기간(n)", variables["n"].ToString() });
             계산FactorRange.Items.Add(new string[] { "납입기간(m)", variables["m"].ToString() });
-            계산FactorRange.Items.Add(new string[] { "세만기(nAge)", variables["nAge"].ToString() });
-            계산FactorRange.Items.Add(new string[] { "세납기(mAge)", variables["mAge"].ToString() });
             계산FactorRange.Items.Add(new string[] { "납입주기코드(Freq)", variables["Freq"].ToString() });
             계산FactorRange.Items.Add(new string[] { "예정이율(i)", variables["i"].ToString() });
             계산FactorRange.Items.Add(new string[] { "평균공시이율(ii)", variables["ii"].ToString() });
             계산FactorRange.Items.Add(new string[] { "예정할인율(v)", variables["v"].ToString() });
             계산FactorRange.Items.Add(new string[] { "평균공시할인율(vv)", variables["vv"].ToString() });
             계산FactorRange.Items.Add(new string[] { "준비금경과년(ElapseYear)", variables["ElapseYear"].ToString() });
-            계산FactorRange.Items.Add(new string[] { "S비율(Min_S)", variables["Min_S"].ToString() });
+            계산FactorRange.Items.Add(new string[] { "S비율(Min_S)", pvCal.Min_S.ToString() });
 
         }
         private void Fill적용위험률Range()
