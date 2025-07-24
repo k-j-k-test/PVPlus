@@ -351,18 +351,18 @@ namespace PVPlus
 
     public class Sample
     {
-        public string[,] Range = new string[1000, 200];
+        public string[,] Range = new string[1000, 300];
         public PVResult result { get; set; }
 
         private SubRange LineRange = new SubRange(0, 0, 1, 2);
-        private SubRange 담보RuleRange = new SubRange(2, 0, 50, 2);
+        private SubRange 담보RuleRange = new SubRange(2, 0, 100, 2);
         private SubRange 위험률FactorRange = new SubRange(2, 3, 15, 2);
         private SubRange 계산FactorRange = new SubRange(2, 6, 20, 2);
-        private SubRange 적용위험률Range = new SubRange(2, 9, 25, 2);
+        private SubRange 적용위험률Range = new SubRange(2, 9, 35, 2);
         private SubRange 적용사업비Range = new SubRange(2, 12, 25, 2);
-        private SubRange 중간계산값Range = new SubRange(2, 15, 25, 2);
-        private SubRange 산출결과Range = new SubRange(2, 18, 140, 4);
-        private SubRange 기수표Range = new SubRange(2, 23, 990, 80);
+        private SubRange 중간계산값Range = new SubRange(2, 15, 35, 2);
+        private SubRange 산출결과Range = new SubRange(2, 18, 250, 4);
+        private SubRange 기수표Range = new SubRange(2, 23, 990, 200);
 
         private string line;
         private VariableCollection variables;

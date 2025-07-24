@@ -173,7 +173,7 @@ namespace PVPlus.UI
                 {
                     return "tab";
                 }
-                else if (c == '|' || c == ',' || c == ';')
+                else if (c == '|' || c == ',' || c == ';' || c == '@')
                 {
                     return c.ToString();
                 }
@@ -190,6 +190,7 @@ namespace PVPlus.UI
                 case "|": return '|';
                 case ",": return ',';
                 case ";": return ';';
+                case "@": return '@';
                 default: return '\0';
             }
         }

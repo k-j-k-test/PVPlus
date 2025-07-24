@@ -532,4 +532,115 @@ namespace PVPlus.PVCALCULATOR
             else return q_C[t + s + r];
         }
     }
+
+    //KB생명 영업보험료식
+    public class PVType113 : PVType1
+    {
+        public PVType113(LineInfo line) : base(line)
+        {
+
+        }
+
+        public override double Get영업보험료(int n, int m, int t, int freq)
+        {
+            double 분자 = 0;
+            double 분모 = 1.0;
+
+            double payCnt = Get연납입횟수(freq);
+            double APV = Get연금현가(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double NNx = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double NP = Get순보험료(n, m, t, freq);
+            double NPSTD = Get기준연납순보험료(n, m, t, 12);
+
+            if (freq == 99)
+            {
+                분자 = NP;
+                분모 = 1 - ex.Alpha_P - ex.Alpha2_P - ex.Beta_P - ex.Gamma - ex.Ce;
+            }
+            else
+            {
+                분자 = c.Mx_급부[0] + ex.Beta_S * (c.Nx_유지자[0] - c.Nx_유지자[m]);
+                분모 = payCnt * NNx * (1.0 - ex.Alpha_P * c.Dx_유지자[0] / NNx - ex.Alpha2_P - ex.Beta_P - ex.Gamma - ex.Ce);
+            }
+
+            return 분자 / 분모;
+        }
+
+        public override double Get준비금(int n, int m, int t, int freq)
+        {
+            double BetaNP = (c.Mx_급부[0] + ex.Beta_S * (c.Nx_유지자[0] - c.Nx_유지자[m])) / GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double payCnt = Get연납입횟수(freq);
+            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
+
+            double 분자 = 0;
+            double 분모 = 1.0;
+
+            double 분자Out = c.Mx_급부[t] - c.Mx_급부[n] + ex.Beta_S * (c.Nx_유지자[Math.Min(t, m)] - c.Nx_유지자[m]);
+            double 분자In = (m > 0 && t <= m) ? BetaNP * NNx_납입자 : 0;
+
+            if (freq == 99)
+            {
+                분자 = 분자Out;
+                분모 = c.Dx_유지자[t];
+            }
+            else
+            {
+                분자 = 분자Out - 분자In;
+                분모 = c.Dx_유지자[t];
+            }
+
+            return 분자 / 분모;
+        }
+    }
+
+    public class PVType1131 : PVType1
+    {
+        public PVType1131(LineInfo line) : base(line)
+        {
+
+        }
+
+        public override double Get준비금(int n, int m, int t, int freq)
+        {
+            double BetaNP = (c.Mx_급부[0] + ex.Beta_S * (c.Nx_유지자[0] - c.Nx_유지자[m])) / GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double payCnt = Get연납입횟수(freq);
+            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
+
+            double 분자 = 0;
+            double 분모 = 1.0;
+
+            double[] M_CAN = c.MxSegments_급부[0];
+            double[] M_OTR = Enumerable.Range(0, 131).Select(x => c.MxSegments_급부.Skip(1).Sum(y => y[x])).ToArray();
+            double[] Dx_A = Enumerable.Range(0, 131).Select(x => c.LxSegments_유지자[0][x] * c.Rate_할인율누계[x]).ToArray();
+            double[] Nx_A = c.GetNx(Dx_A);
+
+            double VA = 0;
+            double VB = 0;
+            double VC = 0;
+
+            double NN_Inforce = (t < m) ? c.Nx_유지자[0] - c.Nx_유지자[m] : 0;
+            double NN_Payment = (t < m) ? c.Nx_납입자[0] - c.Nx_납입자[m] : 0;
+            double NNt_Inforce = (t < m) ? c.Nx_유지자[t] - c.Nx_유지자[m] : 0;
+            double NNt_Payment = (t < m) ? c.Nx_납입자[t] - c.Nx_납입자[m] : 0;
+
+            double P_CAN = M_CAN[0] / NN_Payment;
+            double P_OTR = (M_OTR[0] + ex.Beta_S * NN_Inforce) / NN_Payment;
+
+            if(t < m)
+            {
+                VA = (M_CAN[t] - P_CAN * NNt_Payment) / Dx_A[t];
+                VB = (M_OTR[t] + ex.Beta_S * NNt_Inforce - P_OTR * NNt_Payment) / c.Dx_유지자[t];
+            }
+            else
+            {
+                VA = M_CAN[t] / Dx_A[t];
+                VB = M_OTR[t] / c.Dx_유지자[t];
+            }
+
+
+            VC = M_OTR[t] / Dx_A[t];
+
+            return VA + VB;
+        }
+    }
 }
