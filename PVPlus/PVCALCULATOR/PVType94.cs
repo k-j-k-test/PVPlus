@@ -24,7 +24,7 @@ namespace PVPlus.PVCALCULATOR
             int 갱신종료보험기간 = n;
             double v = (double)variables["v"];
 
-            double[] Cx_납입면제자급부 = Enumerable.Range(0, CommutationTable.MAXSIZE).Select(j => c.Lx_납입자[j] * c.Rate_r1[j] * Math.Pow(v, j + 0.5)).ToArray();
+            double[] Cx_납입면제자급부 = Enumerable.Range(0, CommutationTable.MAXSIZE).Select(j => c.Lx_납입자[j] * c.Rate_k1[j] * Math.Pow(v, j + 0.5)).ToArray();
             double[] Mx_납입면제자급부 = c.GetMx(Cx_납입면제자급부);
 
             double NP1 = (c.Mx_급부[0] - c.Mx_급부[갱신보험기간]) / (payCnt * NNx);

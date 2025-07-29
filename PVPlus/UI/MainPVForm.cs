@@ -555,8 +555,8 @@ namespace PVPlus
             if (dialogResult == DialogResult.Yes)
             {
 
-                DirectoryInfo rootPath = new DirectoryInfo(Application.StartupPath).Parent.CreateSubdirectory("PatchFiles");
-                string AppName = Assembly.GetExecutingAssembly().GetName().Name;
+                //DirectoryInfo rootPath = new DirectoryInfo(Application.StartupPath).CreateSubdirectory("PatchFiles");
+                //string AppName = Assembly.GetExecutingAssembly().GetName().Name;
 
                 try
                 {
@@ -585,7 +585,5 @@ namespace PVPlus
 
         #endregion
 
-
     }
-
 }
