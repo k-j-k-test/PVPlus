@@ -209,6 +209,18 @@ namespace PVPlus.RULES
             Context.Variables["S9"] = 0;
             Context.Variables["S10"] = 0;
 
+            //문자열 Factors
+            Context.Variables["Str1"] = "";
+            Context.Variables["Str2"] = "";
+            Context.Variables["Str3"] = "";
+            Context.Variables["Str4"] = "";
+            Context.Variables["Str5"] = "";
+            Context.Variables["Str6"] = "";
+            Context.Variables["Str7"] = "";
+            Context.Variables["Str8"] = "";
+            Context.Variables["Str9"] = "";
+            Context.Variables["Str10"] = "";
+
             //표준하체 할증 값 적용변수
             //norm:표준체, sub:할증체
             Context.Variables["Substandard_Mode"] = "None";
