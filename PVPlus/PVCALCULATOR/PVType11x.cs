@@ -9,7 +9,7 @@ namespace PVPlus.PVCALCULATOR
 {
     //ABL 납후유지비 상품. 납입면제자에 대한 납후유지비 .
     public class PVType111 : PVType1
-    {       
+    {
         public PVType111(LineInfo line) : base(line)
         {
 
@@ -44,7 +44,7 @@ namespace PVPlus.PVCALCULATOR
 
             double 분자 = 분자Out - 분자In;
             double 분모 = c.Dx_유지자[t];
-           
+
             return 분자 / 분모;
         }
 
@@ -60,7 +60,7 @@ namespace PVPlus.PVCALCULATOR
     }
 
     //라이나생명 납후유지비 상품
-    public class PVType112: PVType11
+    public class PVType112 : PVType11
     {
         public PVType112(LineInfo line) : base(line)
         {
@@ -111,7 +111,7 @@ namespace PVPlus.PVCALCULATOR
         }
     }
 
-    public class PVType1121: PVType11
+    public class PVType1121 : PVType11
     {
         const int MAXSIZE = 131;
 
@@ -131,7 +131,7 @@ namespace PVPlus.PVCALCULATOR
         double[] w = new double[MAXSIZE]; //해지율
 
         double B1 = 0;
-        double B2 = 0; 
+        double B2 = 0;
         double B3 = 0;
         double DWait = 0;
 
@@ -415,7 +415,7 @@ namespace PVPlus.PVCALCULATOR
 
             //Step2
             for (int t = 0; t <= n; t++)
-            {               
+            {
                 for (int s = 0; s <= n - t; s++)
                 {
                     Dx_Step2[t, s] = lx_Step2[t, s] * va[t + s];
@@ -498,11 +498,11 @@ namespace PVPlus.PVCALCULATOR
                         }
                         else if (t + s + r == 1)
                         {
-                            CCx_Step3[t, s, r] = lx_Step3[t, s, r] * (1 - DR2) * B3 * qC(t, s, r)  * (1 - w[t + s + r] / 2) * vam[t + s + r];
+                            CCx_Step3[t, s, r] = lx_Step3[t, s, r] * (1 - DR2) * B3 * qC(t, s, r) * (1 - w[t + s + r] / 2) * vam[t + s + r];
                         }
                         else
                         {
-                            CCx_Step3[t, s, r] = lx_Step3[t, s, r] * B3 * qC(t, s, r)  * (1 - w[t + s + r] / 2) * vam[t + s + r];
+                            CCx_Step3[t, s, r] = lx_Step3[t, s, r] * B3 * qC(t, s, r) * (1 - w[t + s + r] / 2) * vam[t + s + r];
                         }
 
                         //Cx_Step3[t + s + r] += lx_Step1[t] * qA(t) * vam[t] * lx_Step2[t, s] * qB(t, s) * vam[t + s] * CCx_Step3[t, s, r] / Dx_Step3[t, s, 0] / Dx_Step2[t, 0];
@@ -626,7 +626,7 @@ namespace PVPlus.PVCALCULATOR
             double P_CAN = M_CAN[0] / NN_Payment;
             double P_OTR = (M_OTR[0] + ex.Beta_S * NN_Inforce) / NN_Payment;
 
-            if(t < m)
+            if (t < m)
             {
                 VA = (M_CAN[t] - P_CAN * NNt_Payment) / Dx_A[t];
                 VB = (M_OTR[t] + ex.Beta_S * NNt_Inforce - P_OTR * NNt_Payment) / c.Dx_유지자[t];
@@ -641,6 +641,90 @@ namespace PVPlus.PVCALCULATOR
             VC = M_OTR[t] / Dx_A[t];
 
             return VA + VB;
+        }
+    }
+
+    //AIA 준비금 구분적립
+    public class PVType114 : PVType1
+    {
+        public PVType114(LineInfo line) : base(line)
+        {
+
+        }
+
+        public override double Get준비금(int n, int m, int t, int freq)
+        {
+
+            double payCnt = Get연납입횟수(freq);
+            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
+
+            double[] D1x = c.GetDx(c.LxSegments_유지자[0]);
+            double[] M1x = c.MxSegments_급부[0];
+
+            double[] D2x = c.Dx_유지자;
+            double[] M2x = new double[131];
+
+            for (int i = 0; i < 131; i++)
+            {
+                M2x[i] = c.Mx_급부[i] - M1x[i];
+            }
+
+            double 순보험료1 = (M1x[0] - M1x[n]) / (c.Nx_납입자[0] - c.Nx_납입자[m]);
+            double 순보험료2 = (M2x[0] - M2x[n]) / (c.Nx_납입자[0] - c.Nx_납입자[m]);
+
+            double 분자Out1 = M1x[t] - M1x[n];
+            double 분자In1 = (m > 0 && t <= m) ? 순보험료1 * payCnt * NNx_납입자 : 0;
+
+            double 분자Out2 = M2x[t] - M2x[n];
+            double 분자In2 = (m > 0 && t <= m) ? 순보험료2 * payCnt * NNx_납입자 : 0;
+
+            double V1 = (분자Out1 - 분자In1) / D1x[t];
+            double V2 = (분자Out2 - 분자In2) / D2x[t];
+
+            return V1 + V2;
+
+        }
+
+
+    }
+    public class PVType1141 : PVType1
+    {
+        public PVType1141(LineInfo line) : base(line)
+        {
+
+        }
+
+        public override double Get준비금(int n, int m, int t, int freq)
+        {
+
+            double payCnt = Get연납입횟수(freq);
+            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
+
+            double[] D1x = c.GetDx(c.LxSegments_유지자[0]);
+            double[] M1x = c.MxSegments_급부[0];
+
+            double[] D2x = c.Dx_유지자;
+            double[] M2x = new double[131];
+
+            for (int i = 0; i < 131; i++)
+            {
+                M2x[i] = c.Mx_급부[i] - M1x[i];
+            }
+
+            double 순보험료1 = (M1x[0] - M1x[n]) / (c.Nx_납입자[0] - c.Nx_납입자[m]);
+            double 순보험료2 = (M2x[0] - M2x[n]) / (c.Nx_납입자[0] - c.Nx_납입자[m]);
+
+            double 분자Out1 = M1x[t] - M1x[n];
+            double 분자In1 = (m > 0 && t <= m) ? 순보험료1 * payCnt * NNx_납입자 : 0;
+
+            double 분자Out2 = M2x[t] - M2x[n];
+            double 분자In2 = (m > 0 && t <= m) ? 순보험료2 * payCnt * NNx_납입자 : 0;
+
+            double V1 = (분자Out1 - 분자In1) / D1x[t];
+            double V2 = (분자Out2 - 분자In2) / D2x[t];
+
+            return V2;
+
         }
     }
 }
