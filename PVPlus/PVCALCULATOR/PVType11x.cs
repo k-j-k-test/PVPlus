@@ -687,6 +687,7 @@ namespace PVPlus.PVCALCULATOR
 
 
     }
+
     public class PVType1141 : PVType1
     {
         public PVType1141(LineInfo line) : base(line)

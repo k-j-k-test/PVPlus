@@ -13,6 +13,7 @@ namespace PVPlus.PVCALCULATOR
         // 납입지원특약
         public PVType104(LineInfo line) : base(line)
         {
+
         }
 
         public override double Get순보험료(int n, int m, int t, int freq)
@@ -36,7 +37,7 @@ namespace PVPlus.PVCALCULATOR
                 return pi * 분모 / (분모 - pi);
             }
 
-            return 0;          
+            return 0;
         }
 
         public override double Get준비금(int n, int m, int t, int freq)
