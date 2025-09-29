@@ -10,7 +10,7 @@ namespace PVPlus.PVCALCULATOR
 {
     public class PVType3 : PVCalculator
     {
-        public PVType3() 
+        public PVType3(LineInfo line) : base(line)
         {
 
         }
@@ -28,16 +28,16 @@ namespace PVPlus.PVCALCULATOR
                 준비금 = (c.Mx_급부[t] - c.Mx_급부[n]) / c.Dx_유지자[t];
             }
             else
-            {                
+            {
                 // 급부별 지출현가
-                for (int i = 0; i < c.MxSegments_급부.Count; i++) 
+                for (int i = 0; i < c.MxSegments_급부.Count; i++)
                 {
-                    준비금 += c.MxSegments_급부[i][t] / c.GetDx(c.LxSegments_유지자[i])[t];
+                    준비금 += (c.MxSegments_급부[i][t] - c.MxSegments_급부[i][n]) / c.GetDx(c.LxSegments_유지자[i])[t];
                 }
 
                 // 납입자, 납입면제자 급부 지출현가
-                준비금 += c.Mx_납입자급부[t] / c.Dx_유지자[t];
-                준비금 += c.Mx_납입면제자급부[t] / c.Dx_유지자[t];
+                준비금 += (c.Mx_납입자급부[t] - c.Mx_납입자급부[n]) / c.Dx_유지자[t];
+                준비금 += (c.Mx_납입면제자급부[t] - c.Mx_납입면제자급부[n]) / c.Dx_유지자[t];
 
                 // 보험료 수입현가
                 준비금 -= (t <= m) ? 순보험료 * payCnt * NNx_납입자 / c.Dx_유지자[t] : 0;
