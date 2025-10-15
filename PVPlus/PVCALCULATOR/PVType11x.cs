@@ -728,4 +728,86 @@ namespace PVPlus.PVCALCULATOR
 
         }
     }
+
+    //하나생명 납입면제특약, 월납
+    public class PVType115 : PVCalculator
+    {
+        
+        public PVType115(LineInfo line) : base(line)
+        {
+
+        }
+
+        public override double Get순보험료(int n, int m, int t, int freq)
+        {
+            double NP = 0;
+            double payCnt = Get연납입횟수(freq);
+
+            double NNx_월납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, 1, 0, n);
+            double NNx_월유지자 = GetNNx(c.Nx_유지자, c.Dx_유지자, 1, 0, n);
+            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+
+            if (freq == 99)
+            {
+                NP = (c.Mx_급부[0] - c.Mx_급부[n]) / c.Dx_납입자[0];
+            }
+            else
+            {
+                NP = (NNx_월유지자 - NNx_월납입자) / NNx_납입자 * (12.0 / payCnt);
+            }
+
+            return NP;
+        }
+
+        public override double Get기준연납순보험료(int n, int m, int t, int freq)
+        {
+            int Min_n = Math.Min(n, 20);
+            double NP = 0;
+            double payCnt = Get연납입횟수(freq);
+
+            double NNx_월납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, 1, 0, n);
+            double NNx_월유지자 = GetNNx(c.Nx_유지자, c.Dx_유지자, 1, 0, n);
+            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+
+            if (freq == 99)
+            {
+                NP = (c.Mx_급부[0] - c.Mx_급부[n]) / c.Dx_납입자[0];
+            }
+            else
+            {
+                NP = ((c.Nx_유지자[0] - c.Nx_납입자[0]) - (c.Nx_유지자[n] - c.Nx_납입자[n])) / (c.Nx_납입자[0] - c.Nx_납입자[Min_n]);
+            }
+
+            return NP;
+        }
+
+        public override double Get준비금(int n, int m, int t, int freq)
+        {
+
+            double 순보험료 = Get순보험료(n, m, t, 1);
+            double payCnt = Get연납입횟수(freq);
+
+            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, 1, t, n);
+            double NNx_유지자 = GetNNx(c.Nx_유지자, c.Dx_유지자, 1, t, n);
+
+            double 분자 = 0;
+            double 분모 = 1.0;
+
+            double 분자Out = NNx_유지자 - NNx_납입자;
+            double 분자In = (m > 0 && t <= m) ? 순보험료 * NNx_납입자 : 0;
+
+            if (freq == 99)
+            {
+                분자 = 분자Out;
+                분모 = c.Dx_유지자[t];
+            }
+            else
+            {
+                분자 = (분자Out - 분자In);
+                분모 = c.Dx_유지자[t];
+            }
+
+            return 12 * 분자 / 분모;
+        }
+    }
 }
