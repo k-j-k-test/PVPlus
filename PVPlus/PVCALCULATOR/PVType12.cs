@@ -17,6 +17,11 @@ namespace PVPlus.PVCALCULATOR
 
         public override double Get영업보험료(int n, int m, int t, int freq)
         {
+            if ((int)variables["S3"] == 0 && (int)variables["S5"] == 2)
+            {
+                ;
+            }
+
             double 분자 = 0;
             double 분모 = 1.0;
 

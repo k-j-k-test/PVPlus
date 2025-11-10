@@ -16,9 +16,7 @@ namespace PVPlus
 
         public string OrgLine { get; set; }
         public string ResultType { get; set; }
-
         public Dictionary<string, double[]> Org_Cal_Diff = new Dictionary<string, double[]>();
-        public Dictionary<string, Stack<ChkExprs>> CalStacks = new Dictionary<string, Stack<ChkExprs>>();
 
         public PVResult(PVCalculator cal)
         {
@@ -505,6 +503,8 @@ namespace PVPlus
             담보RuleRange.Items.Add(new string[] { "S5", variables["S5"].ToString() });
             담보RuleRange.Items.Add(new string[] { "S6", variables["S6"].ToString() });
             담보RuleRange.Items.Add(new string[] { "S7", variables["S7"].ToString() });
+            담보RuleRange.Items.Add(new string[] { "S8", variables["S8"].ToString() });
+            담보RuleRange.Items.Add(new string[] { "S9", variables["S9"].ToString() });
 
             담보RuleRange.Items.Add(new string[] { "Min_SGroupKey", riderRule.MinSKey });
             담보RuleRange.Items.Add(new string[] { "TempStr1", variables["TempStr1"].ToString() });

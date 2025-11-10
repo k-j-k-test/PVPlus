@@ -529,5 +529,4 @@ namespace PVPlus.RULES
             return result.ToString();
         }
     }
-
 }

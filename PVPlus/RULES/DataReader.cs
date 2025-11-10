@@ -111,6 +111,29 @@ namespace PVPlus.RULES
             string path = Path.Combine(Configure.WorkingDI.FullName, "Rate.txt");
 
             RateRules = ToArrList(path).Select(x => ToRateRule(x)).ToList();
+
+            //RiderRule.RateKeyByRateVariable의 Value 값을 순회하여 "*" 문자가 포함되어 있을 경우 해당 RateKey를 "*"로 분할하여 곱한 값을 새로운 RateRule로 추가
+            //이는 RateRule에 원위험률과 조정계수가 각각 존재하여 원위험률*조정계수 위험률을 추가하기 위함
+            //List<RateRule> additionalRateRules = new List<RateRule>();
+            //foreach (var riderRule in RiderRules)
+            //{
+            //    foreach (var rateKey in riderRule.RateKeyByRateVariable.Values)
+            //    {
+            //        if (rateKey.Contains("*"))
+            //        {
+            //            string[] splitKeys = rateKey.Split('*').Select(x => x.Trim()).ToArray();
+            //            foreach (var splitKey in splitKeys)
+            //            {
+            //                //기존 RateRules에서 "*"로 분할된 2개의 RateRule을 찾고 각각의 케이스에 대해 곱하여 새로운 RateRule 생성
+            //                //곱하는 방식은 F1~F9이 모두 동일한 RateRule끼리만 곱함
+            //                var baseRateRule = RateRules.FirstOrDefault(r => r.위험률명 == splitKey);
+            //                var additionalRateRule = RateRules.FirstOrDefault(r => r.위험률명 == splitKey);
+            //            }
+            //        }
+            //    }
+            //}
+            //RateRules.AddRange(additionalRateRules);
+
         }
         private void ReadLayouts()
         {
