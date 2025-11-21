@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Cache;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,7 +41,7 @@ namespace PVPlus.RULES
 
             helper.variables = variables;
             helper.lineInfo = this;
-            helper.pvCals = new Dictionary<string, PVCalculator>();
+            PVCalculator.Cals = new Dictionary<string, PVCalculator>();
 
             SetVariables();
         }
@@ -56,7 +57,7 @@ namespace PVPlus.RULES
 
             helper.variables = variables;
             helper.lineInfo = this;
-            helper.pvCals = new Dictionary<string, PVCalculator>();
+            PVCalculator.Cals = new Dictionary<string, PVCalculator>();
 
             SetVariables();
         }
@@ -286,7 +287,7 @@ namespace PVPlus.RULES
                 var group1 = selectedLineSummaries.GroupBy(x => x.n);
                 var group2 = selectedLineSummaries.GroupBy(x => x.Age + x.n);
 
-                if(group1.Count() > group2.Count())
+                if (group1.Count() > group2.Count())
                 {
                     //세만기 가정
                     foreach (var line in selectedLineSummaries)
@@ -308,7 +309,7 @@ namespace PVPlus.RULES
                     //연만기 가정
                     foreach (var line in selectedLineSummaries)
                     {
-                        string key = string.Join("\t", line.RiderCode, line.Jong, line.S1, line.m, line.n) ;
+                        string key = string.Join("\t", line.RiderCode, line.Jong, line.S1, line.m, line.n);
 
                         if (!PV.lineSummaries.ContainsKey(key))
                         {
@@ -324,87 +325,56 @@ namespace PVPlus.RULES
             }
         }
 
-        public string GetPVGeneratorKey()
-        {
-            List<string> sb = new List<string>();
-
-            string type1 = variables["Substandard_Mode"].ToString() == "sub" ? "할증체(S2)" : "표준체(S2)";
-            string type2 = (int)variables["S5"] > 0 ? "저해지(S5)" : "표준형(S5)";
-            string type3 = $"{variables["m"]}년납";
-
-            string type = $"{type1}_{type2}_{type3}";
-
-            sb.Add(type);
-            sb.Add($"{RiderCode}");
-            sb.Add($"Age:{variables["Age"]}");
-            sb.Add($"n:{variables["n"]}");
-            sb.Add($"m:{variables["m"]}");
-            //sb.Add($"nAge:{variables["nAge"]}");
-            //sb.Add($"mAge:{variables["mAge"]}");
-            sb.Add($"Freq:{variables["Freq"]}");
-            //sb.Add($"S1:{variables["S1"]}");
-            //sb.Add($"S2:{variables["S2"]}");
-            sb.Add($"S3:{variables["S3"]}");
-            //sb.Add($"S4:{variables["S4"]}");
-            //sb.Add($"S5:{variables["S5"]}");
-            sb.Add($"S6:{variables["S6"]}");
-            sb.Add($"S7:{variables["S7"]}");
-            //sb.Add($"S8:{variables["S8"]}");
-            //sb.Add($"S9:{variables["S9"]}");
-            //sb.Add($"S10:{variables["S10"]}");
-
-            return string.Join("|", sb);
-        }
         public PVCalculator GetPVCalculator()
         {
+            int n = (int)variables["n"];
+            int m = (int)variables["m"];
+            int Min_n = Math.Min(n, 20);
+            int standardType = (int)variables["S2"];
+            int stdType = (int)variables["S3"];
+            int csvType = (int)variables["S5"];
             int PV_Type = (int)variables["PV_Type"];
-            int substandardType = (int)variables["S2"];
+            string currentKey = new PVCalculatorKey().GetKey();
 
-            if (substandardType > 0 && (string)variables["Substandard_Mode"] == "None")
+            //기수표 생성
+            HashSet<int> Set1 = new HashSet<int>() { 0, stdType };
+            HashSet<int> Set2 = new HashSet<int>() { 0, csvType };
+
+            HashSet<(int, int)> Set = new HashSet<(int, int)>() { (0, 0), (0, csvType), (stdType, 0), (stdType, csvType) };
+            //HashSet<(int, int)> Set = new HashSet<(int, int)>() { (stdType, 0), (0, 0), (0, csvType), (stdType, csvType) };
+
+            foreach (var (S3, S5) in Set)
             {
-                //위험률 1배 적용
-                variables["Substandard_Mode"] = "norm"; 
-                PVCalculator norm = GetPVCalculator();
+                variables["S3"] = S3;
+                variables["S5"] = S5;
+                if (S3 == 0 && Set1.Count > 1) variables["m"] = Min_n;
 
-                //위험률 k배 적용 S(k)
-                variables["Substandard_Mode"] = "sub";
-                PVCalculator sub = GetPVCalculator();
-
-                variables["Substandard_Mode"] = "None";
-
-                if (substandardType == 1) return new PVSubstandard(sub, norm);
-                if (substandardType == 2) return new PVSubStandardRound(sub, norm);
-                if (substandardType == 3) return new PVSubstandardSimple(sub, norm);
-                if (substandardType == 4) return new PVSubstandardHanhwaEmergency(sub, norm);
-
-                throw new Exception($"S2 변수의 값 {substandardType}이 적절하지 않습니다.");
-            }
-
-            try
-            {
-                Type type = Type.GetType($"PVPlus.PVCALCULATOR.PVType{PV_Type}");
-                PVCalculator cal = (PVCalculator)Activator.CreateInstance(type, this);
-                return cal;
-            }
-            catch (Exception ex)
-            {
-                if (ex.InnerException == null)
+                if (standardType > 0 && (string)variables["Substandard_Mode"] == "None")
                 {
-                    throw new Exception($"PVType{PV_Type}을 찾을 수 없습니다.");
+                    //위험률 1배 적용
+                    variables["Substandard_Mode"] = "norm";
+                    PVCalculator norm = CreatePVCalculatorInstance(PV_Type);
+
+                    //위험률 k배 적용 S(k)
+                    variables["Substandard_Mode"] = "sub";
+                    PVCalculator sub = CreatePVCalculatorInstance(PV_Type);
+
+                    variables["Substandard_Mode"] = "None";
+                    CreatePVCalculatorInstance(sub, norm);
                 }
-                if (ex.InnerException is InvalidCastException)
+                else
                 {
-                    throw new Exception("캐스트 변환에 실패하였습니다. 레이아웃에서 값을 가져오거나 VarChg시트에 잘못된 cast지정이 있는지 확인바랍니다. ex)int타입의 변수에 double타입의 변수를 넣는 경우..." );
-                }
-                if (ex.InnerException is IndexOutOfRangeException)
-                {
-                    throw new Exception("인덱스가 배열 범위를 벗어났습니다. (Age+n) 값이 131을 초과하였는지 등 배열 인덱스 값 확인이 필요합니다.");
+                    CreatePVCalculatorInstance(PV_Type);
                 }
 
-                throw new Exception(ex.InnerException.Message);
+                variables["S3"] = stdType;
+                variables["S5"] = csvType;
+                variables["m"] = m;
             }
 
+            return PVCalculator.Cals[currentKey];
         }
+
         public PVCalculator GetPVCalculator(string otherRiderCode, Dictionary<string, object> otherVariables)
         {
             //helper클래스에서 다른 담보코드 및 변수의 값을 산출하는 메서드 구현시 사용
@@ -424,6 +394,51 @@ namespace PVPlus.RULES
             //RiderRule, Variables 복원
             if (otherRiderCode != null) RiderCode = orgRiderCode;
             orgVariables.Keys.ToList().ForEach(x => variables[x] = orgVariables[x]);
+
+            return cal;
+        }
+
+        private PVCalculator CreatePVCalculatorInstance(int PV_Type)
+        {
+            try
+            {
+                Type type = Type.GetType($"PVPlus.PVCALCULATOR.PVType{PV_Type}");
+                PVCalculator cal = (PVCalculator)Activator.CreateInstance(type, this);
+                return cal;
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException == null)
+                {
+                    throw new Exception($"PVType{PV_Type}을 찾을 수 없습니다.");
+                }
+                if (ex.InnerException is InvalidCastException)
+                {
+                    throw new Exception("캐스트 변환에 실패하였습니다. 레이아웃에서 값을 가져오거나 VarChg시트에 잘못된 cast지정이 있는지 확인바랍니다. ex)int타입의 변수에 double타입의 변수를 넣는 경우...");
+                }
+                if (ex.InnerException is IndexOutOfRangeException)
+                {
+                    throw new Exception("인덱스가 배열 범위를 벗어났습니다. (Age+n) 값이 131을 초과하였는지 등 배열 인덱스 값 확인이 필요합니다.");
+                }
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
+
+        private PVCalculator CreatePVCalculatorInstance(PVCalculator sub, PVCalculator norm)
+        {
+            int standardType = (int)variables["S2"];
+
+            PVCalculator cal;
+            if (standardType == 1)
+                cal = new PVSubstandard(sub, norm);
+            else if (standardType == 2)
+                cal = new PVSubStandardRound(sub, norm);
+            else if (standardType == 3)
+                cal = new PVSubstandardSimple(sub, norm);
+            else if (standardType == 4)
+                cal = new PVSubstandardHanhwaEmergency(sub, norm);
+            else
+                throw new Exception($"S2 변수의 값 {standardType}이 적절하지 않습니다.");
 
             return cal;
         }
@@ -527,6 +542,44 @@ namespace PVPlus.RULES
             }
 
             return result.ToString();
+        }
+    }
+
+    public class PVCalculatorKey
+    {
+        public string RiderCode { get; set; }
+        public int Age { get; set; }
+        public int n { get; set; }
+        public int m { get; set; }
+
+        public int S2 { get; set; }
+        public int S3 { get; set; }
+        public int S5 { get; set; }
+        public int S6 { get; set; }
+
+        public string Substandard_Mode { get; set; }
+
+        public PVCalculatorKey()
+        {
+            RiderCode = PV.variables["RiderCode"].ToString();
+            Age = (int)PV.variables["Age"];
+            n = (int)PV.variables["n"];
+            m = (int)PV.variables["m"];
+            S2 = (int)PV.variables["S2"];
+            S3 = (int)PV.variables["S3"];
+            S5 = (int)PV.variables["S5"];
+            S6 = (int)PV.variables["S6"];
+            Substandard_Mode = (string)PV.variables["Substandard_Mode"];
+        }
+
+        public string GetKey()
+        {
+            return $"{RiderCode}|Age:{Age}|n:{n}|m:{m}|S2:{Substandard_Mode}|S3:{S3}|S5:{S5}";
+        }
+
+        public string GetKeyWith(string RiderCode = null, int? Age = null, int? n = null, int? m = null, int? S2 = null, int? S3 = null, int? S5 = null, int? S6 = null, string Substandard_Mode = null)
+        {
+            return $"{RiderCode ?? this.RiderCode}|Age:{Age ?? this.Age}|n:{n ?? this.n}|m:{m ?? this.m}|S2:{Substandard_Mode ?? this.Substandard_Mode}|S3:{S3 ?? this.S3}|S5:{S5 ?? this.S5}";
         }
     }
 }

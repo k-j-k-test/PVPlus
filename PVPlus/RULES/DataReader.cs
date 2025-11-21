@@ -272,7 +272,6 @@ namespace PVPlus.RULES
             for (int i = 1; i <= 30; i++)
             {
                 Context.Variables["q" + i] = 0.0;
-                Context.Variables["t" + i] = 0;
             }
             Context.Variables["w"] = 0.0;
             Context.Variables["r1"] = 0.0;

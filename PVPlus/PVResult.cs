@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace PVPlus
 {
@@ -265,7 +266,7 @@ namespace PVPlus
             int freq = (int)variables["Freq"];
 
             Dict["Min_S"] = cal.Min_S;
-            Dict["Amount"] = cal.가입금액;
+            Dict["Amount"] = cal.SA;
             Dict["GP"] = cal.Eval("GP6", n, m, t, 1);
             Dict["STDNP"] = cal.Eval("STDNP_UNIT", n, m, t, 12) * Dict["Amount"];
             Dict["alpha_P"] = cal.ex.Alpha_P;
@@ -414,8 +415,8 @@ namespace PVPlus
             Fill중간계산값Range();
             Fill산출결과Range();
 
-            List<string> pvKeys = helper.pvCals.Keys.Reverse().ToList();
-            pvKeys.ForEach(x => Fill기수표Range(기수표Range, helper.pvCals[x], x));
+            List<string> pvKeys = PVCalculator.Cals.Keys.Reverse().ToList();
+            pvKeys.ForEach(x => Fill기수표Range(기수표Range, PVCalculator.Cals[x], x));
             PasteRange(LineRange);
             PasteRange(담보RuleRange);
             PasteRange(위험률FactorRange);
@@ -700,9 +701,10 @@ namespace PVPlus
 
             기수표Set.Add($"Mx_급부({1}~{c.RateSegments_유지자.Count()})합계", sequence.Select(x => c.MxSegments_급부합계[x].ToString()).ToArray());
 
-            if (cal.stdCalofLCSV != null)
+            if ((int)variables["S5"] > 0)
             {
-                PVCalculator cal2 = cal.stdCalofLCSV;
+                string gKey = cal.key.GetKeyWith(S5: 0);
+                PVCalculator cal2 = PVCalculator.Cals[gKey];
 
                 기수표Set.Add("표준형V", sequence.Select(t => cal2.Eval("V2_UNIT", n, m, t, freq).ToString()).ToArray());
                 기수표Set.Add("표준형W", sequence.Select(t => cal2.Get해약환급금(n, m, t, freq).ToString()).ToArray());

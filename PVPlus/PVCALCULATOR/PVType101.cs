@@ -18,9 +18,9 @@ namespace PVPlus.PVCALCULATOR
         public override double Get순보험료(int n, int m, int t, int freq)
         {
             double NP = 0;
-            double payCnt = Get연납입횟수(freq);
-            double NNx1 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, 5);
-            double NNx2 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 5, m);
+            double payCnt = mm(freq);
+            double NNx1 = NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, 5);
+            double NNx2 = NNx(c.Nx_납입자, c.Dx_납입자, freq, 5, m);
 
             if ((int)variables["F8"] == 1) t = 5;
 
@@ -43,9 +43,9 @@ namespace PVPlus.PVCALCULATOR
         {
 
             double 순보험료 = Get순보험료(n, m, 0, freq);
-            double payCnt = Get연납입횟수(freq);
-            double NNx_납입자1 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, Math.Min(t, 5), 5);
-            double NNx_납입자2 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, Math.Max(t, 5), m);
+            double payCnt = mm(freq);
+            double NNx_납입자1 = NNx(c.Nx_납입자, c.Dx_납입자, freq, Math.Min(t, 5), 5);
+            double NNx_납입자2 = NNx(c.Nx_납입자, c.Dx_납입자, freq, Math.Max(t, 5), m);
 
             double 분자 = 0;
             double 분모 = 1.0;
@@ -77,12 +77,12 @@ namespace PVPlus.PVCALCULATOR
             ;
             if ((int)variables["F8"] == 1) t = 5;
 
-            double payCnt = Get연납입횟수(freq);
-            double APV = Get연금현가(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double payCnt = mm(freq);
+            double APV = ax(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
             double 연납P20 = Get순보험료(n, Math.Min(n, 20), t, 12);
 
             double NP = Get순보험료(n, m, t, freq);
-            double NNx = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double NNx = base.NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
 
             if (freq == 99)
             {

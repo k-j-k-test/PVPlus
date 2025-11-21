@@ -15,20 +15,23 @@ namespace PVPlus.PVCALCULATOR
 
         public PVSubstandard(PVCalculator sub, PVCalculator norm) : base() 
         {
-
             this.sub = sub;
             this.norm = norm;
 
             line = norm.line;
             variables = norm.variables;
+
+            key = new PVCalculatorKey();
+            Cals[key.GetKey()] = this;
             c = norm.c;
             ex = norm.ex;
+            LocalVariables = variables.ToDictionary(x => x.Key, y => y.Value);
 
             productRule = norm.productRule;
             riderRule = norm.riderRule;
             companyRule = Configure.CompanyRule;
 
-            가입금액 = (double)variables["Amount"];
+            SA = (double)variables["Amount"];
             Min_S = 0;
 
             helper.cal = this;
@@ -65,23 +68,23 @@ namespace PVPlus.PVCALCULATOR
 
         public override double Get순보험료(int n, int m, int t, int freq)
         {
-            return helper.Round2(sub.Get순보험료(n, m, t, freq) * 가입금액) / 가입금액 - helper.Round2(norm.Get순보험료(n, m, t, freq) * 가입금액) / 가입금액;
+            return helper.Round2(sub.Get순보험료(n, m, t, freq) * SA) / SA - helper.Round2(norm.Get순보험료(n, m, t, freq) * SA) / SA;
         }
         public override double GetBeta순보험료(int n, int m, int t, int freq)
         {
-            return helper.Round2(sub.Get순보험료(n, m, t, freq) * 가입금액) / 가입금액 - helper.Round2(norm.Get순보험료(n, m, t, freq) * 가입금액) / 가입금액;
+            return helper.Round2(sub.Get순보험료(n, m, t, freq) * SA) / SA - helper.Round2(norm.Get순보험료(n, m, t, freq) * SA) / SA;
         }
         public override double Get위험보험료(int n, int m, int t, int freq)
         {
-            return helper.Round2(sub.Get위험보험료(n, m, t, freq) * 가입금액) / 가입금액 - helper.Round2(norm.Get위험보험료(n, m, t, freq) * 가입금액) / 가입금액;
+            return helper.Round2(sub.Get위험보험료(n, m, t, freq) * SA) / SA - helper.Round2(norm.Get위험보험료(n, m, t, freq) * SA) / SA;
         }
         public override double Get영업보험료(int n, int m, int t, int freq)
         {
-            return helper.Round2(sub.Get순보험료(n, m, t, freq) * 가입금액) / 가입금액 - helper.Round2(norm.Get순보험료(n, m, t, freq) * 가입금액) / 가입금액;
+            return helper.Round2(sub.Get순보험료(n, m, t, freq) * SA) / SA - helper.Round2(norm.Get순보험료(n, m, t, freq) * SA) / SA;
         }
         public override double Get준비금(int n, int m, int t, int freq)
         {
-            return helper.Round2(sub.Get준비금(n, m, t, freq) * 가입금액) / 가입금액 - helper.Round2(norm.Get준비금(n, m, t, freq) * 가입금액) / 가입금액;
+            return helper.Round2(sub.Get준비금(n, m, t, freq) * SA) / SA - helper.Round2(norm.Get준비금(n, m, t, freq) * SA) / SA;
         }
     }
 
@@ -139,7 +142,7 @@ namespace PVPlus.PVCALCULATOR
             riderRule = norm.riderRule;
             companyRule = Configure.CompanyRule;
 
-            가입금액 = (double)variables["Amount"];
+            SA = (double)variables["Amount"];
             Min_S = 0;
 
             

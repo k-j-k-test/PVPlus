@@ -18,8 +18,8 @@ namespace PVPlus.PVCALCULATOR
 
         public override double Get순보험료(int n, int m, int t, int freq)
         {
-            double 납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
-            double 유지자 = GetNNx(c.Nx_유지자, c.Dx_유지자, freq, 0, m);
+            double 납입자 = NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double 유지자 = NNx(c.Nx_유지자, c.Dx_유지자, freq, 0, m);
             double 납입면제자 = 유지자 - 납입자;
 
             double 납면율 = 납입면제자 / 유지자;

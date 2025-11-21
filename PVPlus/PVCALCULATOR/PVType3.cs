@@ -18,8 +18,8 @@ namespace PVPlus.PVCALCULATOR
         public override double Get준비금(int n, int m, int t, int freq)
         {
             double 순보험료 = Get순보험료(n, m, t, freq);
-            double payCnt = Get연납입횟수(freq);
-            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
+            double payCnt = mm(freq);
+            double NNx_납입자 = NNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
 
             double 준비금 = 0;
 

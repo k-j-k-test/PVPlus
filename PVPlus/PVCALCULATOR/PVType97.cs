@@ -28,8 +28,8 @@ namespace PVPlus.PVCALCULATOR
             int n2 = n;
 
             double v = (double)variables["v"];
-            double payCnt = Get연납입횟수(freq);
-            double NNx = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double payCnt = mm(freq);
+            double NNx = base.NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
 
             double[] Cx_납입면제자급부 = Enumerable.Range(0, CommutationTable.MAXSIZE).Select(j => c.Lx_납입자[j] * c.Rate_r1[j] * Math.Pow(v, j + 0.5)).ToArray();
             double[] Mx_납입면제자급부 = c.GetMx(Cx_납입면제자급부);
@@ -50,8 +50,8 @@ namespace PVPlus.PVCALCULATOR
 
             double NP = Get순보험료(n, m, t, freq);
             double v = (double)variables["v"];
-            double payCnt = Get연납입횟수(freq);
-            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
+            double payCnt = mm(freq);
+            double NNx_납입자 = NNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
 
             double[] Cx_납입면제자급부 = Enumerable.Range(0, CommutationTable.MAXSIZE).Select(j => c.Lx_납입자[j] * c.Rate_r1[j] * Math.Pow(v, j + 0.5)).ToArray();
             double[] Mx_납입면제자급부 = c.GetMx(Cx_납입면제자급부);
@@ -90,8 +90,8 @@ namespace PVPlus.PVCALCULATOR
             int n2 = n;
 
             double v = (double)variables["v"];
-            double payCnt = Get연납입횟수(freq);
-            double NNx = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double payCnt = mm(freq);
+            double NNx = base.NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
 
             double[] Cx_납입면제자급부 = Enumerable.Range(0, CommutationTable.MAXSIZE).Select(j => c.Lx_납입자[j] * c.Rate_r1[j] * Math.Pow(v, j + 0.5)).ToArray();
             double[] Mx_납입면제자급부 = c.GetMx(Cx_납입면제자급부);
@@ -112,8 +112,8 @@ namespace PVPlus.PVCALCULATOR
 
             double NP = Get순보험료(n, m, t, freq);
             double v = (double)variables["v"];
-            double payCnt = Get연납입횟수(freq);
-            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
+            double payCnt = mm(freq);
+            double NNx_납입자 = NNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
 
             double[] Cx_납입면제자급부 = Enumerable.Range(0, CommutationTable.MAXSIZE).Select(j => c.Lx_납입자[j] * c.Rate_r1[j] * Math.Pow(v, j + 0.5)).ToArray();
             double[] Mx_납입면제자급부 = c.GetMx(Cx_납입면제자급부);

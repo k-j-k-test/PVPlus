@@ -1,21 +1,21 @@
 ﻿using Flee.PublicTypes;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using PVPlus.RULES;
 using System.Reflection;
-using System.Security.Policy;
-using System.IO;
+using System.Text.RegularExpressions;
+using System.Security.Cryptography;
 
 namespace PVPlus.PVCALCULATOR
 {
     abstract public class PVCalculator
     {
+        public static Dictionary<string, PVCalculator> Cals;
+
         public ICompanyRule companyRule;
         public ProductRule productRule;
         public RiderRule riderRule;
@@ -25,14 +25,11 @@ namespace PVPlus.PVCALCULATOR
         public CommutationTable c;
         public Expense ex;
 
-        public PVCalculator stdCal; //납입기간 Min(n,20) 일 때  
-        public PVCalculator stdCalofLCSV;   //저해지의 표준형
+        public double SA;
+        public double Min_S;    //표준해약공제액 계산을 위한 SA
 
-        public double 가입금액;
-        public double Min_S;    //표준해약공제액 계산을 위한 가입금액
-
+        public PVCalculatorKey key;
         public Dictionary<string, object> LocalVariables { get; set; }
-        public string Generators { get; set; }
 
         public PVCalculator()
         {
@@ -42,61 +39,23 @@ namespace PVPlus.PVCALCULATOR
         {
             this.line = line;
             variables = line.variables;
-
+            key = new PVCalculatorKey();
+            Cals[key.GetKey()] = this;
             productRule = PV.finder.FindProductRule();
             riderRule = PV.finder.FindRiderRule(line.RiderCode);
             companyRule = Configure.CompanyRule;
-
             ex = FindExpense();
-            가입금액 = (double)variables["Amount"];
+            SA = (double)variables["Amount"];
             Min_S = PV.finder.FindMin_S(riderRule.MinSKey);
-
-            //납입기간이 m일 때와 Min(20,n)일때 기수표가 달라지는 경우(납기별 해지율 및 기납입보험료 환급 등)
-            if ((int)variables["S3"] > 0)
-            {
-                int n = (int)variables["n"];
-                int m = (int)variables["m"];
-                int stdType = (int)variables["S3"];
-                int Min_n = Math.Min(n, 20);
-                if (m == 0) Min_n = 0;
-
-                variables["S3"] = 0;
-                variables["m"] = Min_n;
-
-                PVCalculator stdCal = line.GetPVCalculator();
-
-                variables["S3"] = stdType;
-                variables["m"] = m;
-
-                this.stdCal = stdCal;
-            }
-
-            //저해지의 경우 표준형(w=0) PVCal을 helper클래스에 저장
-            if ((int)variables["S5"] > 0)
-            {
-                int csvType = (int)variables["S5"];
-                variables["S5"] = 0;
-
-                PVCalculator stdCalofLCSV = line.GetPVCalculator();
-                helper.stdCalofLCSV = stdCalofLCSV;
-
-                variables["S5"] = csvType;
-
-                this.stdCalofLCSV = stdCalofLCSV;
-            }
-
             c = MakeCommutationTable();
-
-            Generators = line.GetPVGeneratorKey();
             LocalVariables = variables.ToDictionary(x => x.Key, y => y.Value);
-            helper.pvCals[Generators] = this;
         }
 
         public virtual double Get순보험료(int n, int m, int t, int freq)
         {
             double NP = 0;
-            double payCnt = Get연납입횟수(freq);
-            double NNx = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double payCnt = mm(freq);
+            double NNx = this.NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
 
             if (freq == 99)
             {
@@ -111,15 +70,19 @@ namespace PVPlus.PVCALCULATOR
         }
         public virtual double Get기준연납순보험료(int n, int m, int t, int freq)
         {
+            int S3 = (int)variables["S3"];
             int Min_n = Math.Min(n, 20);
 
-            if (stdCal == null)
+            if (S3 > 0)
             {
-                return Get순보험료(n, Min_n, t, 12);
+                string gKey = key.GetKeyWith(S3: 0, m: Min_n);
+                double STDNP = Cals[gKey].Get순보험료(n, Min_n, t, 12);
+
+                return STDNP;
             }
             else
             {
-                return stdCal.Get순보험료(n, Min_n, t, 12);
+                return Get순보험료(n, Min_n, t, 12);
             }
         }
         public virtual double Get위험보험료(int n, int m, int t, int freq)
@@ -139,8 +102,8 @@ namespace PVPlus.PVCALCULATOR
             double 분자 = 0;
             double 분모 = 1.0;
 
-            double payCnt = Get연납입횟수(freq);
-            double APV = Get연금현가(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double payCnt = mm(freq);
+            double APV = ax(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
             double NP = Get순보험료(n, m, t, freq);
             double NPSTD = Get기준연납순보험료(n, m, t, 12);
 
@@ -160,8 +123,8 @@ namespace PVPlus.PVCALCULATOR
         public virtual double Get준비금(int n, int m, int t, int freq)
         {
             double 순보험료 = Get순보험료(n, m, t, freq);
-            double payCnt = Get연납입횟수(freq);
-            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
+            double payCnt = mm(freq);
+            double NNx_납입자 = NNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
 
             double 분자 = 0;
             double 분모 = 1.0;
@@ -184,7 +147,7 @@ namespace PVPlus.PVCALCULATOR
         }
         public virtual double Get자연식위험보험료(int n, int m, int t, int freq)
         {
-            double payCnt = Get연납입횟수(freq);
+            double payCnt = mm(freq);
             double V0 = Get준비금(n, m, t, freq);
             double V1 = Get준비금(n, m, t + 1, freq);
             double v = c.Rate_할인율[t];
@@ -263,21 +226,20 @@ namespace PVPlus.PVCALCULATOR
                 RateQx.Add(rateVariableName, new double[CommutationTable.MAXSIZE]);
 
                 int rateNum = int.Parse(s.Key.Replace("q", ""));
-                int t0 = (int)variables[$"t{rateNum}"];
 
                 for (int t = 0; t <= n; t++)
                 {
                     if (rateRule.기간 == 0)
                     {
-                        RateQx[rateVariableName][t] = rateRule.RateArr[0 + t0];
+                        RateQx[rateVariableName][t] = rateRule.RateArr[0];
                     }
                     else if (rateRule.기간 == 1)
                     {
-                        RateQx[rateVariableName][t] = rateRule.RateArr[age + t + t0];
+                        RateQx[rateVariableName][t] = rateRule.RateArr[age + t];
                     }
                     else if (rateRule.기간 == 2)
                     {
-                        RateQx[rateVariableName][t] = rateRule.RateArr[t + t0];
+                        RateQx[rateVariableName][t] = rateRule.RateArr[t];
                     }
                     else
                     {
@@ -296,12 +258,18 @@ namespace PVPlus.PVCALCULATOR
 
             else return PV.finder.FindExpense(riderRule, variables);
         }
+
         public virtual CommutationTable MakeCommutationTable()
         {
             CommutationTable c = new CommutationTable();
-            int MAXSIZE = CommutationTable.MAXSIZE; //131
+            CalculateCommutationRates(c);
+            CalculateCommutationColumns(c);
+            return c;
+        }
+        public virtual void CalculateCommutationRates(CommutationTable c)
+        {
+            int MAXSIZE = CommutationTable.MAXSIZE;
             int csvType = (int)variables["S5"];
-
             int age = (int)variables["Age"];
             int n = (int)variables["n"];
             int m = (int)variables["m"];
@@ -352,49 +320,27 @@ namespace PVPlus.PVCALCULATOR
                 c.Rate_이율[t] = (double)variables["i"];
                 c.Rate_해지율[t] = (double)variables["w"];
 
-                if (r1Exist) variables["r1"] = riderRule.r1Expr.Evaluate();
-                if (r2Exist) variables["r2"] = riderRule.r2Expr.Evaluate();
-                if (r3Exist) variables["r3"] = riderRule.r3Expr.Evaluate();
-                if (r4Exist) variables["r4"] = riderRule.r4Expr.Evaluate();
-                if (r5Exist) variables["r5"] = riderRule.r5Expr.Evaluate();
-                if (r6Exist) variables["r6"] = riderRule.r6Expr.Evaluate();
-                if (r7Exist) variables["r7"] = riderRule.r7Expr.Evaluate();
-                if (r8Exist) variables["r8"] = riderRule.r8Expr.Evaluate();
-                if (r9Exist) variables["r9"] = riderRule.r9Expr.Evaluate();
-                if (r10Exist) variables["r10"] = riderRule.r10Expr.Evaluate();
+                if (r1Exist) { variables["r1"] = riderRule.r1Expr.Evaluate(); c.Rate_r1[t] = (double)variables["r1"]; }
+                if (r2Exist) { variables["r2"] = riderRule.r2Expr.Evaluate(); c.Rate_r2[t] = (double)variables["r2"]; }
+                if (r3Exist) { variables["r3"] = riderRule.r3Expr.Evaluate(); c.Rate_r3[t] = (double)variables["r3"]; }
+                if (r4Exist) { variables["r4"] = riderRule.r4Expr.Evaluate(); c.Rate_r4[t] = (double)variables["r4"]; }
+                if (r5Exist) { variables["r5"] = riderRule.r5Expr.Evaluate(); c.Rate_r5[t] = (double)variables["r5"]; }
+                if (r6Exist) { variables["r6"] = riderRule.r6Expr.Evaluate(); c.Rate_r6[t] = (double)variables["r6"]; }
+                if (r7Exist) { variables["r7"] = riderRule.r7Expr.Evaluate(); c.Rate_r7[t] = (double)variables["r7"]; }
+                if (r8Exist) { variables["r8"] = riderRule.r8Expr.Evaluate(); c.Rate_r8[t] = (double)variables["r8"]; }
+                if (r9Exist) { variables["r9"] = riderRule.r9Expr.Evaluate(); c.Rate_r9[t] = (double)variables["r9"]; }
+                if (r10Exist) { variables["r10"] = riderRule.r10Expr.Evaluate(); c.Rate_r10[t] = (double)variables["r10"]; }
 
-                if (k1Exist) variables["k1"] = riderRule.k1Expr.Evaluate();
-                if (k2Exist) variables["k2"] = riderRule.k2Expr.Evaluate();
-                if (k3Exist) variables["k3"] = riderRule.k3Expr.Evaluate();
-                if (k4Exist) variables["k4"] = riderRule.k4Expr.Evaluate();
-                if (k5Exist) variables["k5"] = riderRule.k5Expr.Evaluate();
-                if (k6Exist) variables["k6"] = riderRule.k6Expr.Evaluate();
-                if (k7Exist) variables["k7"] = riderRule.k7Expr.Evaluate();
-                if (k8Exist) variables["k8"] = riderRule.k8Expr.Evaluate();
-                if (k9Exist) variables["k9"] = riderRule.k9Expr.Evaluate();
-                if (k10Exist) variables["k10"] = riderRule.k10Expr.Evaluate();
-
-                if (r1Exist) c.Rate_r1[t] = (double)variables["r1"];
-                if (r2Exist) c.Rate_r2[t] = (double)variables["r2"];
-                if (r3Exist) c.Rate_r3[t] = (double)variables["r3"];
-                if (r4Exist) c.Rate_r4[t] = (double)variables["r4"];
-                if (r5Exist) c.Rate_r5[t] = (double)variables["r5"];
-                if (r6Exist) c.Rate_r6[t] = (double)variables["r6"];
-                if (r7Exist) c.Rate_r7[t] = (double)variables["r7"];
-                if (r8Exist) c.Rate_r8[t] = (double)variables["r8"];
-                if (r9Exist) c.Rate_r9[t] = (double)variables["r9"];
-                if (r10Exist) c.Rate_r10[t] = (double)variables["r10"];
-
-                if (k1Exist) c.Rate_k1[t] = (double)variables["k1"];
-                if (k2Exist) c.Rate_k2[t] = (double)variables["k2"];
-                if (k3Exist) c.Rate_k3[t] = (double)variables["k3"];
-                if (k4Exist) c.Rate_k4[t] = (double)variables["k4"];
-                if (k5Exist) c.Rate_k5[t] = (double)variables["k5"];
-                if (k6Exist) c.Rate_k6[t] = (double)variables["k6"];
-                if (k7Exist) c.Rate_k7[t] = (double)variables["k7"];
-                if (k8Exist) c.Rate_k8[t] = (double)variables["k8"];
-                if (k9Exist) c.Rate_k9[t] = (double)variables["k9"];
-                if (k10Exist) c.Rate_k10[t] = (double)variables["k10"];
+                if (k1Exist) { variables["k1"] = riderRule.k1Expr.Evaluate(); c.Rate_k1[t] = (double)variables["k1"]; }
+                if (k2Exist) { variables["k2"] = riderRule.k2Expr.Evaluate(); c.Rate_k2[t] = (double)variables["k2"]; }
+                if (k3Exist) { variables["k3"] = riderRule.k3Expr.Evaluate(); c.Rate_k3[t] = (double)variables["k3"]; }
+                if (k4Exist) { variables["k4"] = riderRule.k4Expr.Evaluate(); c.Rate_k4[t] = (double)variables["k4"]; }
+                if (k5Exist) { variables["k5"] = riderRule.k5Expr.Evaluate(); c.Rate_k5[t] = (double)variables["k5"]; }
+                if (k6Exist) { variables["k6"] = riderRule.k6Expr.Evaluate(); c.Rate_k6[t] = (double)variables["k6"]; }
+                if (k7Exist) { variables["k7"] = riderRule.k7Expr.Evaluate(); c.Rate_k7[t] = (double)variables["k7"]; }
+                if (k8Exist) { variables["k8"] = riderRule.k8Expr.Evaluate(); c.Rate_k8[t] = (double)variables["k8"]; }
+                if (k9Exist) { variables["k9"] = riderRule.k9Expr.Evaluate(); c.Rate_k9[t] = (double)variables["k9"]; }
+                if (k10Exist) { variables["k10"] = riderRule.k10Expr.Evaluate(); c.Rate_k10[t] = (double)variables["k10"]; }
 
                 c.Rate_유지자[t] = riderRule.유지자Expr.Evaluate();
                 c.Rate_납입자[t] = riderRule.납입자Expr.Evaluate();
@@ -410,6 +356,10 @@ namespace PVPlus.PVCALCULATOR
 
             c.Rate_할인율 = Enumerable.Range(0, MAXSIZE).Select(x => 1 / (1 + c.Rate_이율[x])).ToArray();
             c.Rate_할인율누계 = Enumerable.Range(0, MAXSIZE).Select(x => c.Pow(c.Rate_할인율, x)).ToArray();
+        }
+        public virtual void CalculateCommutationColumns(CommutationTable c)
+        {
+            int MAXSIZE = CommutationTable.MAXSIZE;
 
             c.Lx_납입자 = ((int)variables["S8"] == 0) ? c.GetLx(c.Rate_납입자) : c.GetLx(c.Rate_유지자);
             c.Lx_유지자 = c.GetLx(c.Rate_유지자);
@@ -431,11 +381,9 @@ namespace PVPlus.PVCALCULATOR
             c.Mx_납입자급부 = c.GetMx(c.Cx_납입자급부);
             c.Mx_납입면제자급부 = c.GetMx(c.Cx_납입면제자급부);
             c.Mx_급부 = Enumerable.Range(0, MAXSIZE).Select(i => c.MxSegments_급부합계[i] + c.Mx_납입자급부[i] + c.Mx_납입면제자급부[i]).ToArray();
-
-            return c;
         }
 
-        protected double GetNNx(double[] Nx, double[] Dx, int freq, int start, int end)
+        protected double NNx(double[] Nx, double[] Dx, int freq, int start, int end)
         {
             double NNx = Nx[start] - Nx[end];
 
@@ -463,15 +411,11 @@ namespace PVPlus.PVCALCULATOR
 
             return Math.Max(NNx, 0);
         }
-        protected double GetMMx(double[] Mx, int start, int end)
+        protected double ax(double[] Nx, double[] Dx, int freq, int start, int end)
         {
-            return Mx[start] - Mx[end];
+            return NNx(Nx, Dx, freq, start, end) / Dx[start];
         }
-        protected double Get연금현가(double[] Nx, double[] Dx, int freq, int start, int end)
-        {
-            return GetNNx(Nx, Dx, freq, start, end) / Dx[start];
-        }
-        protected int Get연납입횟수(int freq)
+        protected int mm(int freq)
         {
             switch (freq)
             {

@@ -21,8 +21,8 @@ namespace PVPlus.PVCALCULATOR
             double 분자 = 0;
             double 분모 = 1.0;
 
-            double payCnt = Get연납입횟수(freq);
-            double APV = Get연금현가(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double payCnt = mm(freq);
+            double APV = ax(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
             double NPBeta = GetBeta순보험료(n, m, t, freq);
 
             if (freq == 99)

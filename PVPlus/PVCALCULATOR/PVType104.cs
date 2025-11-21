@@ -19,11 +19,11 @@ namespace PVPlus.PVCALCULATOR
         public override double Get순보험료(int n, int m, int t, int freq)
         {
             double NP = 0;
-            double payCnt = Get연납입횟수(freq);
-            double APV = Get연금현가(c.Nx_유지자, c.Dx_유지자, freq, 0, m);
+            double payCnt = mm(freq);
+            double APV = ax(c.Nx_유지자, c.Dx_유지자, freq, 0, m);
 
-            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
-            double NNx_유지자 = GetNNx(c.Nx_유지자, c.Dx_유지자, freq, 0, m);
+            double NNx_납입자 = NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double NNx_유지자 = NNx(c.Nx_유지자, c.Dx_유지자, freq, 0, m);
             double pi = (NNx_유지자 - NNx_납입자) / NNx_유지자;
 
             double 분모 = (1.0 - ex.Alpha_P / APV - ex.Alpha2_P - ex.Beta_P - ex.Gamma - ex.Ce);
@@ -43,9 +43,9 @@ namespace PVPlus.PVCALCULATOR
         public override double Get준비금(int n, int m, int t, int freq)
         {
             double NP = Get순보험료(n, m, t, freq);
-            double payCnt = Get연납입횟수(freq);
-            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
-            double NNx_유지자 = GetNNx(c.Nx_유지자, c.Dx_유지자, freq, t, m);
+            double payCnt = mm(freq);
+            double NNx_납입자 = NNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
+            double NNx_유지자 = NNx(c.Nx_유지자, c.Dx_유지자, freq, t, m);
 
             double V = 0;
 

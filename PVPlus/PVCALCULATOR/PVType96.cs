@@ -23,7 +23,7 @@ namespace PVPlus.PVCALCULATOR
         public override double Get순보험료(int n, int m, int t, int freq)
         {
             double NP = 0;
-            double payCnt = Get연납입횟수(freq);
+            double payCnt = mm(freq);
             int n1 = 연장기준나이 - (int)variables["Age"];    //연장기준나이까지 보험기간
 
             if (freq == 99)
@@ -32,7 +32,7 @@ namespace PVPlus.PVCALCULATOR
             }
             else
             {
-                NP = (c.Mx_급부[0] - c.Mx_급부[n]) / (payCnt * GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m));
+                NP = (c.Mx_급부[0] - c.Mx_급부[n]) / (payCnt * NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m));
 
             }
 
@@ -41,14 +41,14 @@ namespace PVPlus.PVCALCULATOR
 
         public override double Get준비금(int n, int m, int t, int freq)
         {
-            double payCnt = Get연납입횟수(freq);
-            double NNx_유지자 = GetNNx(c.Nx_유지자, c.Dx_유지자, freq, t, m);
+            double payCnt = mm(freq);
+            double NNx_유지자 = NNx(c.Nx_유지자, c.Dx_유지자, freq, t, m);
 
             int n1 = 연장기준나이 - (int)variables["Age"];    //연장기준나이까지 보험기간
             bool Is사고발생 = (int)variables["S6"] == 1;
 
-            double NPA = (c.Mx_급부[0] - c.Mx_급부[n1]) / (payCnt * GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m));
-            double NPB = (c.Mx_급부[n1] - c.Mx_급부[n]) / (payCnt * GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m));
+            double NPA = (c.Mx_급부[0] - c.Mx_급부[n1]) / (payCnt * NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m));
+            double NPB = (c.Mx_급부[n1] - c.Mx_급부[n]) / (payCnt * NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m));
 
             double V = 0;
 

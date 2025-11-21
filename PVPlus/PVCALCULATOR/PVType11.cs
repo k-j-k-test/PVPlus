@@ -21,8 +21,8 @@ namespace PVPlus.PVCALCULATOR
             double 분자 = 0;
             double 분모 = 1.0;
 
-            double payCnt = Get연납입횟수(freq);
-            double APV = Get연금현가(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double payCnt = mm(freq);
+            double APV = ax(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
             double NPBeta = GetBeta순보험료(n, m, t, freq);
             double NPSTD = Get기준연납순보험료(n, m, t, 12);
 
@@ -44,9 +44,9 @@ namespace PVPlus.PVCALCULATOR
         public override double Get준비금(int n, int m, int t, int freq)
         {
             double NPBeta =  GetBeta순보험료(n, m, t, freq);
-            double payCnt = Get연납입횟수(freq);
-            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
-            double NNx_납후유지자 = GetNNx(c.Nx_유지자, c.Dx_유지자, 12, Math.Max(m, t), n);
+            double payCnt = mm(freq);
+            double NNx_납입자 = NNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
+            double NNx_납후유지자 = NNx(c.Nx_유지자, c.Dx_유지자, 12, Math.Max(m, t), n);
 
             double 분자 = 0;
             double 분모 = 1.0;
@@ -75,13 +75,13 @@ namespace PVPlus.PVCALCULATOR
 
         public virtual double GetBeta보험료(int n, int m, int t, int freq)
         {
-            //가입금액 1원당 적용되는 납후유지비에 의한 순보험료 증가액
+            //SA 1원당 적용되는 납후유지비에 의한 순보험료 증가액
 
             double betaPrime = ex.Betaprime_S;
-            double payCnt = Get연납입횟수(freq);
+            double payCnt = mm(freq);
 
-            double 분자 = GetNNx(c.Nx_유지자, c.Dx_유지자, 12, m, n);
-            double 분모 = (freq == 99) ? 100000 : payCnt * GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double 분자 = NNx(c.Nx_유지자, c.Dx_유지자, 12, m, n);
+            double 분모 = (freq == 99) ? 100000 : payCnt * NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
 
             return betaPrime * 분자 / 분모;
         }

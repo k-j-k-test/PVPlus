@@ -18,8 +18,8 @@ namespace PVPlus.PVCALCULATOR
 
         public override double Get순보험료(int n, int m, int t, int freq)
         {
-            double payCnt = Get연납입횟수(freq);
-            double NNx = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double payCnt = mm(freq);
+            double NNx = base.NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
             int 갱신보험기간 = (int)variables["S7"];
             int 갱신종료보험기간 = n;
             double v = (double)variables["v"];
@@ -36,8 +36,8 @@ namespace PVPlus.PVCALCULATOR
         public override double Get준비금(int n, int m, int t, int freq)
         {
             double NP = Get순보험료(n, m, t, freq);
-            double payCnt = Get연납입횟수(freq);
-            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
+            double payCnt = mm(freq);
+            double NNx_납입자 = NNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
             int 갱신보험기간 = (int)variables["S7"];
             int 갱신종료보험기간 = n;
             double v = (double)variables["v"];

@@ -1,15 +1,16 @@
 ﻿using Flee.PublicTypes;
+using PVPlus.PVCALCULATOR;
+using PVPlus.RULES;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Windows.Forms;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
-using System.Collections.Generic;
-using System.Text;
-using PVPlus.RULES;
-using System.Data.Common;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Windows.Forms;
 
 namespace PVPlus
 {
@@ -116,8 +117,8 @@ namespace PVPlus
             {
                 try
                 {
-                    string[] pvKeys = helper.pvCals.Select(x => x.Key).Reverse().ToArray();
-                    var cal = helper.pvCals.LastOrDefault().Value;
+                    string[] pvKeys = PVCalculator.Cals.Select(x => x.Key).Reverse().ToArray();
+                    var cal = PVCalculator.Cals.LastOrDefault().Value;
 
                     comboBox1.Items.Clear();
                     comboBox1.Items.AddRange(pvKeys);
@@ -149,7 +150,7 @@ namespace PVPlus
 
                 if (string.IsNullOrWhiteSpace(item)) return;
 
-                var cal = helper.pvCals[pvKey];
+                var cal = PVCalculator.Cals[pvKey];
                 cal.LocalVariables.Keys.ToList().ForEach(x => helper.variables[x] = cal.LocalVariables[x]);
                 helper.cal = cal;
 

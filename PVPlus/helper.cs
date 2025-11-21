@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Reflection;
 using System.Security.AccessControl;
+using System.Text.RegularExpressions;
 
 namespace PVPlus
 {
@@ -26,7 +27,6 @@ namespace PVPlus
 
         public static LineInfo lineInfo { get; set;}
         public static VariableCollection variables { get; set; } 
-        public static Dictionary<string, PVCalculator> pvCals { get; set; }
 
         public static bool Renewal()
         {
@@ -207,7 +207,7 @@ namespace PVPlus
         public static double Ax(string riderCode, int age, int n)
         {
             //일시납 보험료
-            Dictionary<string, object> otherVariables = new Dictionary<string, object>() { { "Age", age }, {"F5", age }, { "n", n }, { "m", 0 }, { "Freq", 99 }, { "S3", 0 }, {"S5", 0 } };
+            Dictionary<string, object> otherVariables = new Dictionary<string, object>() { { "Age", age }, {"F5", age }, { "n", n }, { "m", 0 }, { "Freq", 99 }, { "S3", 0 }, {"S5", 0 }, { "PV_Type", 1 } };
 
             string cacheKey = GetCacheKey(riderCode, otherVariables, "Ax");
 
@@ -273,70 +273,124 @@ namespace PVPlus
 
 
         //저해지의 표준형 산출 값
-        public static PVCalculator stdCalofLCSV { get; set; }
-
         public static double V(int t)
         {
-            if (stdCalofLCSV == null || (int)variables["S5"] == 0) return 0;
+            int S5 = (int)variables["S5"];
+            string gKey = new PVCalculatorKey().GetKeyWith(S5: 0);
 
-            int n = (int)variables["n"];
-            int m = (int)variables["m"];
-            int freq = (int)variables["Freq"];
-            double V = stdCalofLCSV.Eval("V2_UNIT", n, m, t, freq);
-            return V;
+            if ((int)variables["S5"] > 0 && PVCalculator.Cals.ContainsKey(gKey))
+            {
+                PVCalculator lcsvCal = PVCalculator.Cals[gKey];
+
+                int n = (int)variables["n"];
+                int m = (int)variables["m"];
+                int freq = (int)variables["Freq"];
+
+                variables["S5"] = 0;
+                double V = lcsvCal.Eval("V2_UNIT", n, m, t, freq);
+                variables["S5"] = S5;
+
+                return V;
+            }
+
+            return 0;
         }
 
         public static double W(int t)
         {
-            if (stdCalofLCSV == null || (int)variables["S5"] == 0) return 0;
+            int S5 = (int)variables["S5"];
+            string gKey = new PVCalculatorKey().GetKeyWith(S5: 0);
 
-            int n = (int)variables["n"];
-            int m = (int)variables["m"];
-            int freq = (int)variables["Freq"];
-            double W = stdCalofLCSV.Eval("W_UNIT", n, m, t, freq);
-            return W;
+            if ((int)variables["S5"] > 0 && PVCalculator.Cals.ContainsKey(gKey))
+            {
+                PVCalculator lcsvCal = PVCalculator.Cals[gKey];
+
+                int n = (int)variables["n"];
+                int m = (int)variables["m"];
+                int freq = (int)variables["Freq"];
+
+                variables["S5"] = 0;
+                double W = lcsvCal.Eval("W_UNIT", n, m, t, freq);
+                variables["S5"] = S5;
+
+                return W;
+            }
+
+            return 0;
         }
 
         public static double V(int t, int ac)
         {
-            if (stdCalofLCSV == null || (int)variables["S5"] == 0) return 0;
-
-            int n = (int)variables["n"];
-            int m = (int)variables["m"];
-            int freq = (int)variables["Freq"];
+            int S5 = (int)variables["S5"];
             int S6 = (int)variables["S6"];
+            string gKey = new PVCalculatorKey().GetKeyWith(S5: 0);
 
-            variables["S6"] = ac;
-            double V = stdCalofLCSV.Eval("V2_UNIT", n, m, t, freq);
-            variables["S6"] = S6;
+            if ((int)variables["S5"] > 0 && PVCalculator.Cals.ContainsKey(gKey))
+            {
+                PVCalculator lcsvCal = PVCalculator.Cals[gKey];
 
-            return V;
+                int n = (int)variables["n"];
+                int m = (int)variables["m"];
+                int freq = (int)variables["Freq"];
+                
+                variables["S5"] = 0;
+                variables["S6"] = ac;
+                double V = lcsvCal.Eval("V2_UNIT", n, m, t, freq);
+                variables["S5"] = S5;
+                variables["S6"] = S6;
+
+                return V;
+            }
+
+            return 0;
         }
 
         public static double W(int t, int ac)
         {
-            if (stdCalofLCSV == null || (int)variables["S5"] == 0) return 0;
-
-            int n = (int)variables["n"];
-            int m = (int)variables["m"];
-            int freq = (int)variables["Freq"];
+            int S5 = (int)variables["S5"];
             int S6 = (int)variables["S6"];
+            string gKey = new PVCalculatorKey().GetKeyWith(S5: 0);
 
-            variables["S6"] = ac;
-            double W = stdCalofLCSV.Eval("W_UNIT", n, m, t, freq);
-            variables["S6"] = S6;
+            if ((int)variables["S5"] > 0 && PVCalculator.Cals.ContainsKey(gKey))
+            {
+                PVCalculator lcsvCal = PVCalculator.Cals[gKey];
 
-            return W;
+                int n = (int)variables["n"];
+                int m = (int)variables["m"];
+                int freq = (int)variables["Freq"];
+
+                variables["S5"] = 0;
+                variables["S6"] = ac;
+                double W = lcsvCal.Eval("W_UNIT", n, m, t, freq);
+                variables["S5"] = S5;
+                variables["S6"] = S6;
+
+                return W;
+            }
+
+            return 0;
         }
 
         public static double GP(int freq)
         {
-            if (stdCalofLCSV == null || (int)variables["S5"] == 0) return 0;
+            int S5 = (int)variables["S5"];
+            string gKey = cal.key.GetKeyWith(S5: 0);
 
-            int n = (int)variables["n"];
-            int m = (int)variables["m"];
-            double GP = stdCalofLCSV.Eval("GP_UNIT", n, m, 0, freq);
-            return GP;
+            if ((int)variables["S5"] > 0 && PVCalculator.Cals.ContainsKey(gKey))
+            {
+                PVCalculator lcsvCal = PVCalculator.Cals[gKey];
+
+                int n = (int)variables["n"];
+                int m = (int)variables["m"];
+
+                variables["S5"] = 0;
+                double GP = lcsvCal.Eval("GP_UNIT", n, m, 0, freq);
+                variables["S5"] = S5;
+
+                return GP;
+            }
+
+            return 0;
         }
 
         public static double GP()
@@ -508,17 +562,43 @@ namespace PVPlus
             return -1;
         }
 
-        public static string Left(object item, int count)
+        public static string Left(string item, int count)
         {
             return item.ToString().Substring(0, count);
         }
-        public static string Right(object item, int count)
+        public static string Right(string item, int count)
         {
             return item.ToString().Substring(item.ToString().Length - count, count);           
         }
-        public static string Mid(object item, int start, int count)
+        public static string Mid(string item, int start, int count)
         {
             return item.ToString().Substring(start - 1, count);
+        }
+
+        public static int Left(int item, int count)
+        {
+            return int.Parse(item.ToString().Substring(0, count));
+        }
+        public static int Right(int item, int count)
+        {
+            return int.Parse(item.ToString().Substring(item.ToString().Length - count, count));
+        }
+        public static int Mid(int item, int start, int count)
+        {
+            return int.Parse(item.ToString().Substring(start - 1, count));
+        }
+
+        public static double Left(double item, int count)
+        {
+            return double.Parse(item.ToString().Substring(0, count));
+        }
+        public static double Right(double item, int count)
+        {
+            return double.Parse(item.ToString().Substring(item.ToString().Length - count, count));
+        }
+        public static double Mid(double item, int start, int count)
+        {
+            return double.Parse(item.ToString().Substring(start - 1, count));
         }
 
         public static double Ifs(Boolean condition1, double val1, double dafaultVal)

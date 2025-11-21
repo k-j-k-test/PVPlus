@@ -21,14 +21,14 @@ namespace PVPlus.PVCALCULATOR
             double 분자 = 0;
             double 분모 = 1.0;
 
-            double payCnt = Get연납입횟수(freq);
-            double APV = Get연금현가(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double payCnt = mm(freq);
+            double APV = ax(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
             double NPBeta = GetBeta순보험료(n, m, t, freq);
             double NPSTD = Get기준연납순보험료(n, m, t, 12);
 
-            double NNx_납입 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
-            double NNx_유지 = GetNNx(c.Nx_유지자, c.Dx_유지자, 12, 0, m);
-            double NNx_납후 = GetNNx(c.Nx_유지자, c.Dx_유지자, 12, m, n);
+            double NNx_납입 = NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double NNx_유지 = NNx(c.Nx_유지자, c.Dx_유지자, 12, 0, m);
+            double NNx_납후 = NNx(c.Nx_유지자, c.Dx_유지자, 12, m, n);
 
             if (freq == 99)
             {

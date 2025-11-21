@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace PVPlus.PVCALCULATOR
 {
+    //한화 2세대 실손(통합 3종 등에 사용), 순보험료를 Round 처리 후 준비금 및 영업보험료 산출
     public class PVType17 : PVCalculator
     {
         public PVType17(LineInfo line) : base(line)
@@ -57,8 +58,8 @@ namespace PVPlus.PVCALCULATOR
         public double GetNPSegment(int n, int m, int t, int freq, double[] Mx_급부)
         {
             double NP = 0;
-            double payCnt = Get연납입횟수(freq);
-            double NNx = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double payCnt = mm(freq);
+            double NNx = base.NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
 
             if (freq == 99)
             {
@@ -77,8 +78,8 @@ namespace PVPlus.PVCALCULATOR
             double 분자 = 0;
             double 분모 = 1.0;
 
-            double payCnt = Get연납입횟수(freq);
-            double APV = Get연금현가(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double payCnt = mm(freq);
+            double APV = ax(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
 
             if (freq == 99)
             {
@@ -96,8 +97,8 @@ namespace PVPlus.PVCALCULATOR
 
         public double GetVSegment(int n, int m, int t, int freq, double[] Mx_급부, double NP)
         {
-            double payCnt = Get연납입횟수(freq);
-            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
+            double payCnt = mm(freq);
+            double NNx_납입자 = NNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
 
             double 분자 = 0;
             double 분모 = 1.0;

@@ -18,8 +18,8 @@ namespace PVPlus.PVCALCULATOR
 
         public override double Get순보험료(int n, int m, int t, int freq)
         {
-            double payCnt = Get연납입횟수(freq);
-            double NNx = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
+            double payCnt = mm(freq);
+            double NNx = base.NNx(c.Nx_납입자, c.Dx_납입자, freq, 0, m);
             double v = (double)variables["v"];
 
             double NP1 = (c.Mx_급부[0] - c.Mx_급부[n]) / (payCnt * NNx);
@@ -34,8 +34,8 @@ namespace PVPlus.PVCALCULATOR
             bool Is완납 = t >= m;
 
             double NP = Get순보험료(n, m, t, freq);
-            double payCnt = Get연납입횟수(freq);
-            double NNx_납입자 = GetNNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
+            double payCnt = mm(freq);
+            double NNx_납입자 = NNx(c.Nx_납입자, c.Dx_납입자, freq, t, m);
             double v = (double)variables["v"];
 
             double V = 0;
